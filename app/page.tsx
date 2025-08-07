@@ -376,7 +376,7 @@ export default function Home() {
             { href: "#", label: "Terms" }
           ].map((link) => (
             <Link 
-              key={link.href}
+              key={link.label}
               href={link.href} 
               className={`hover:underline transition-colors duration-300 ${link.color || 'hover:text-gray-300'}`}
             >
