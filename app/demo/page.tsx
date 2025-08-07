@@ -60,9 +60,8 @@ export default function DemoPage() {
             <h3 className="text-2xl font-bold text-gray-100 mb-4">Implementation</h3>
             <div className="bg-gray-800 rounded-lg p-4 mb-4">
               <pre className="text-green-400 text-sm overflow-x-auto">
-{`<script src="https://cdn.smartredirect.com/v1/redirect.js"
-        data-domain="yourdomain.com"
-        data-target="https://yourdomain.com"></script>`}
+{`<script src="https://xrepo.fyi/api/redirect?domain=yourdomain.com&target=https://yourdomain.com"></script>`}
+
               </pre>
             </div>
             <p className="text-gray-400 text-sm">

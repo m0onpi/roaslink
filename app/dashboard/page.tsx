@@ -14,7 +14,7 @@ export default function Dashboard() {
       // Use environment variable or fallback to current origin
       return process.env.NEXT_PUBLIC_PRODUCTION_DOMAIN || window.location.origin;
     }
-    return process.env.NEXT_PUBLIC_PRODUCTION_DOMAIN || 'https://smartredirect.com';
+    return process.env.NEXT_PUBLIC_PRODUCTION_DOMAIN || 'https://xrepo.fyi';
   };
 
   const generateScript = () => {

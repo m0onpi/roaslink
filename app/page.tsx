@@ -94,7 +94,7 @@ export default function Home() {
                 <button className="text-blue-400 hover:text-blue-300 text-sm">Copy Code</button>
               </div>
               <pre className="text-green-400 text-sm overflow-x-auto">
-{`<script src="https://smartredirect.com/api/redirect?domain=yourdomain.com&target=https://yourdomain.com"></script>`}
+{`<script src="https://xrepo.fyi/api/redirect?domain=yourdomain.com&target=https://yourdomain.com"></script>`}
               </pre>
             </motion.div>
 
@@ -266,7 +266,7 @@ export default function Home() {
               <div className="bg-gray-800 rounded-lg p-6 mb-6">
                                  <pre className="text-green-400 text-sm overflow-x-auto">
 {`<head>
-  <script src="https://smartredirect.com/api/redirect?domain=yourdomain.com&target=https://yourdomain.com"></script>
+  <script src="https://xrepo.fyi/api/redirect?domain=yourdomain.com&target=https://yourdomain.com"></script>
 </head>`}
                  </pre>
               </div>

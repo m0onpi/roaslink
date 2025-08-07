@@ -13,8 +13,8 @@ export const metadata: Metadata = {
     title: "SmartRedirect - Universal In-App Browser Redirect",
     description: "Seamlessly redirect users from in-app browsers to native browsers. Increase conversion rates by 40%.",
     type: "website",
-    url: "https://smartredirect.com",
-    siteName: "SmartRedirect",
+    url: "https://xrepo.fyi",
+    siteName: "xrep",
   },
   twitter: {
     card: "summary_large_image",
