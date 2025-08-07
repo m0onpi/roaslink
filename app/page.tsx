@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { FaChartLine, FaChartBar, FaCalendar, FaArrowRight, FaStar, FaUsers, FaShieldAlt, FaBolt, FaGraduationCap, FaBullseye, FaClock, FaDollarSign, FaHeart, FaTrophy, FaLightbulb, FaGlobe, FaCalendarAlt, FaCog, FaBook, FaBell } from 'react-icons/fa';
+import { FaChartLine, FaChartBar, FaCalendar, FaArrowRight, FaStar, FaUsers, FaShieldAlt, FaBolt, FaGraduationCap, FaBullseye, FaClock, FaDollarSign, FaHeart, FaTrophy, FaLightbulb, FaGlobe, FaCalendarAlt, FaCog, FaBook, FaBell, FaCode, FaRocket } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 
@@ -65,17 +65,19 @@ export default function Home() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => router.push('/demo')}
                 className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600/20 to-blue-500/20 text-blue-400 border border-blue-500/30 rounded-xl hover:from-blue-600/30 hover:to-blue-500/30 transition-all duration-300 shadow-lg hover:shadow-blue-500/25"
               >
-                Start Free Trial
-                <FaArrowRight className="ml-2" />
+                Try Demo
+                <FaRocket className="ml-2" />
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => router.push('/dashboard')}
                 className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-gray-600/20 to-gray-500/20 text-gray-400 border border-gray-500/30 rounded-xl hover:from-gray-600/30 hover:to-gray-500/30 transition-all duration-300 shadow-lg hover:shadow-gray-500/25"
               >
-                View Demo
+                Get Started
                 <FaArrowRight className="ml-2" />
               </motion.button>
             </div>
@@ -88,13 +90,11 @@ export default function Home() {
               className="bg-gradient-to-br from-[#2a2a2a] to-[#3a3a3a] rounded-2xl p-6 max-w-2xl mx-auto border border-gray-700/50 shadow-lg"
             >
               <div className="flex items-center justify-between mb-4">
-                <span className="text-gray-400 text-sm">Implementation</span>
+                <span className="text-gray-400 text-sm">One-Line Implementation</span>
                 <button className="text-blue-400 hover:text-blue-300 text-sm">Copy Code</button>
               </div>
               <pre className="text-green-400 text-sm overflow-x-auto">
-{`<script src="https://cdn.smartredirect.com/v1/redirect.js"
-        data-domain="yourdomain.com"
-        data-target="https://yourdomain.com"></script>`}
+{`<script src="https://smartredirect.com/api/redirect?domain=yourdomain.com&target=https://yourdomain.com"></script>`}
               </pre>
             </motion.div>
 
@@ -215,9 +215,9 @@ export default function Home() {
                 color: "purple"
               },
               {
-                icon: <FaArrowRight className="w-6 h-6 rotate-90" />,
-                title: "Analytics Dashboard",
-                description: "Track redirect performance, success rates, and user behavior. Optimize your conversion funnel with detailed insights and real-time metrics.",
+                icon: <FaCode className="w-6 h-6" />,
+                title: "Simple Integration",
+                description: "One-line script implementation. No complex setup or configuration required. Works with any website framework or CMS.",
                 color: "yellow"
               }
             ].map((feature, index) => (
@@ -241,7 +241,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Pricing Section */}
+      {/* Implementation Section */}
       <div className="py-24 bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div 
@@ -251,87 +251,62 @@ export default function Home() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl font-bold text-gray-100 mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-lg text-gray-400">Choose the plan that fits your needs. All plans include a 14-day free trial.</p>
+            <h2 className="text-3xl font-bold text-gray-100 mb-4">Get Started in Minutes</h2>
+            <p className="text-lg text-gray-400">Simple implementation that works with any website.</p>
           </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Starter",
-                price: "$9",
-                period: "per month",
-                description: "Perfect for small websites and personal projects",
-                features: ["Basic redirect functionality", "1 domain", "Standard analytics", "Email support", "Path preservation", "Mobile optimization"],
-                cta: "Start Free Trial",
-                popular: false
-              },
-              {
-                name: "Professional",
-                price: "$29",
-                period: "per month",
-                description: "Ideal for growing businesses and e-commerce sites",
-                features: ["Advanced detection algorithms", "5 domains", "Custom fallback UI", "A/B testing", "Priority support", "Advanced analytics", "White-label options", "API access"],
-                cta: "Start Free Trial",
-                popular: true
-              },
-              {
-                name: "Enterprise",
-                price: "$99",
-                period: "per month",
-                description: "For large organizations with multiple properties",
-                features: ["Unlimited domains", "White-label solution", "Custom integrations", "Dedicated support", "Advanced analytics", "SLA guarantee", "Custom development", "On-premise option"],
-                cta: "Contact Sales",
-                popular: false
-              }
-            ].map((plan, index) => (
-              <motion.div
-                key={plan.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1, duration: 0.6 }}
-                viewport={{ once: true }}
-                whileHover={{ scale: 1.02, y: -2 }}
-                className={`bg-gradient-to-br from-[#2a2a2a] to-[#3a3a3a] rounded-2xl p-8 border border-gray-700/50 shadow-lg hover:shadow-xl transition-all duration-300 relative ${plan.popular ? 'border-blue-500/50 shadow-blue-500/25' : ''}`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
-                      Most Popular
-                    </span>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <h3 className="text-2xl font-bold text-gray-100 mb-6">Step 1: Add the Script</h3>
+              <div className="bg-gray-800 rounded-lg p-6 mb-6">
+                                 <pre className="text-green-400 text-sm overflow-x-auto">
+{`<head>
+  <script src="https://smartredirect.com/api/redirect?domain=yourdomain.com&target=https://yourdomain.com"></script>
+</head>`}
+                 </pre>
+              </div>
+              <p className="text-gray-400">
+                Add this single line to your website's &lt;head&gt; section. 
+                Replace "yourdomain.com" with your actual domain.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <h3 className="text-2xl font-bold text-gray-100 mb-6">Step 2: Test & Deploy</h3>
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold mr-4 flex-shrink-0">1</div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-100 mb-2">Test the Implementation</h4>
+                    <p className="text-gray-400">Share your website link on social media and test from in-app browsers.</p>
                   </div>
-                )}
-                
-                <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold text-gray-100 mb-2">{plan.name}</h3>
-                  <div className="flex items-baseline justify-center mb-4">
-                    <span className="text-5xl font-bold text-gray-100">{plan.price}</span>
-                    <span className="text-gray-400 ml-2">{plan.period}</span>
-                  </div>
-                  <p className="text-gray-400">{plan.description}</p>
                 </div>
-
-                <ul className="space-y-4 mb-8">
-                  {plan.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-start">
-                      <FaStar className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                      <span className="text-gray-300">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`w-full py-3 px-6 rounded-lg font-semibold transition-all duration-200 ${
-                    plan.popular 
-                      ? 'bg-gradient-to-r from-blue-600/20 to-blue-500/20 text-blue-400 border border-blue-500/30 hover:from-blue-600/30 hover:to-blue-500/30' 
-                      : 'bg-gradient-to-r from-gray-600/20 to-gray-500/20 text-gray-400 border border-gray-500/30 hover:from-gray-600/30 hover:to-gray-500/30'
-                  }`}
-                >
-                  {plan.cta}
-                </motion.button>
-              </motion.div>
-            ))}
+                <div className="flex items-start">
+                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold mr-4 flex-shrink-0">2</div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-100 mb-2">Monitor Performance</h4>
+                    <p className="text-gray-400">Track redirect success rates and user behavior improvements.</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold mr-4 flex-shrink-0">3</div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-100 mb-2">Enjoy Better Conversions</h4>
+                    <p className="text-gray-400">Watch your conversion rates improve as users get better experiences.</p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </div>
@@ -351,14 +326,26 @@ export default function Home() {
             <p className="text-xl text-gray-400 mb-8">
               Join thousands of businesses that are already improving their user experience with our platform. Start redirecting users seamlessly today and see the difference it makes in your conversion rates.
             </p>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600/20 to-blue-500/20 text-blue-400 border border-blue-500/30 rounded-xl hover:from-blue-600/30 hover:to-blue-500/30 transition-all duration-300 shadow-lg hover:shadow-blue-500/25"
-            >
-              Start Free Trial
-              <FaArrowRight className="ml-2" />
-            </motion.button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => router.push('/demo')}
+                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600/20 to-blue-500/20 text-blue-400 border border-blue-500/30 rounded-xl hover:from-blue-600/30 hover:to-blue-500/30 transition-all duration-300 shadow-lg hover:shadow-blue-500/25"
+              >
+                Try Demo
+                <FaRocket className="ml-2" />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => router.push('/dashboard')}
+                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-gray-600/20 to-gray-500/20 text-gray-400 border border-gray-500/30 rounded-xl hover:from-gray-600/30 hover:to-gray-500/30 transition-all duration-300 shadow-lg hover:shadow-gray-500/25"
+              >
+                Get Started
+                <FaArrowRight className="ml-2" />
+              </motion.button>
+            </div>
           </motion.div>
         </div>
       </div>
@@ -367,11 +354,10 @@ export default function Home() {
       <footer className="mt-16 border-t border-gray-800/50 pt-8 text-center text-gray-400 bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a]">
         <div className="flex flex-wrap justify-center gap-6 mb-4">
           {[
-            { href: "#", label: "Features", color: "text-blue-400" },
+            { href: "/demo", label: "Demo", color: "text-blue-400" },
             { href: "#", label: "How It Works" },
-            { href: "#", label: "Pricing" },
-            { href: "#", label: "Implementation" },
             { href: "#", label: "Documentation" },
+            { href: "#", label: "Support" },
             { href: "#", label: "Privacy Policy" },
             { href: "#", label: "Terms" }
           ].map((link) => (
