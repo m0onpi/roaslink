@@ -1,7 +1,8 @@
+var ___ = "__TARGET__";
 (function() {
   'use strict';
   
-  const baseUrl = '__TARGET__';
+  const baseUrl = ___;
   let needsUserAction = false;
   
   // Debug logging function
