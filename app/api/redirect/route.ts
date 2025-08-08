@@ -17,8 +17,7 @@ export async function GET(request: NextRequest) {
     return new NextResponse('Invalid domain format', { status: 400 });
   }
 
-  const script = `
-(function() {
+  const script = `(function() {
   'use strict';
   
   const baseUrl = '${target}';
@@ -26,7 +25,7 @@ export async function GET(request: NextRequest) {
   
   // Debug logging function
   function debugLog(message) {
-    ${debug ? 'console.log("[SmartRedirect Debug]", message);' : ''}
+    
   }
   
   debugLog('Script loaded on: ' + window.location.href);
@@ -157,8 +156,7 @@ export async function GET(request: NextRequest) {
     // Default redirect for other platforms
     window.location.replace(targetUrl);
   }
-})();
-`;
+})();`;
 
   return new NextResponse(script, {
     headers: {
