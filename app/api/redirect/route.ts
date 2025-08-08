@@ -9,9 +9,57 @@ export async function GET(request: NextRequest) {
     return new NextResponse('Missing required parameter: target', { status: 400 });
   }
 
-  // Basic domain validation
-  const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/;
-  if (!domainRegex.test(target.replace(/^https?:\/\//, ''))) {
+  // Robust domain validation - supports subdomains and multi-level TLDs like .co.uk, .com.au
+  const cleanTarget = target.replace(/^https?:\/\//, '');
+  
+  // Function to validate domain format
+  function isValidDomain(domain: string): boolean {
+    // Remove protocol if present
+    const cleanDomain = domain.replace(/^https?:\/\//, '');
+    
+    // Basic structure check
+    if (!cleanDomain || cleanDomain.length > 253) {
+      return false;
+    }
+    
+    // Split by dots
+    const parts = cleanDomain.split('.');
+    if (parts.length < 2) {
+      return false;
+    }
+    
+    // Check each part
+    for (let part of parts) {
+      if (part.length === 0 || part.length > 63) {
+        return false;
+      }
+      
+      // Must start and end with alphanumeric
+      if (!/^[a-zA-Z0-9]/.test(part) || !/[a-zA-Z0-9]$/.test(part)) {
+        return false;
+      }
+      
+      // Can contain hyphens but not at start or end
+      if (part.includes('-') && (part.startsWith('-') || part.endsWith('-'))) {
+        return false;
+      }
+      
+      // Only allow letters, numbers, and hyphens
+      if (!/^[a-zA-Z0-9-]+$/.test(part)) {
+        return false;
+      }
+    }
+    
+    // TLD must be at least 2 characters
+    const tld = parts[parts.length - 1];
+    if (tld.length < 2) {
+      return false;
+    }
+    
+    return true;
+  }
+  
+  if (!isValidDomain(cleanTarget)) {
     return new NextResponse('Invalid domain format', { status: 400 });
   }
 
