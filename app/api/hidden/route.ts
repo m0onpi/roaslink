@@ -27,7 +27,24 @@ export async function GET(request: NextRequest) {
   // For in-app browsers: return obfuscated script
   try {
     const rawScript = readFileSync(join(process.cwd(), 'test.obf.js'), 'utf8');
-    const script = rawScript.replace(/__TARGET__/g, target);
+    
+    // More robust replacement - handle both __TARGET__ and any obfuscated version
+    let script = rawScript;
+    
+    // Try multiple replacement patterns
+    if (script.includes('__TARGET__')) {
+      script = script.replace(/__TARGET__/g, target);
+    } else {
+      // If __TARGET__ is not found, try to find the obfuscated version
+      // Look for the pattern that represents the target URL
+      const targetPattern = /['"`]__TARGET__['"`]/g;
+      if (script.match(targetPattern)) {
+        script = script.replace(targetPattern, `'${target}'`);
+      } else {
+        // Fallback: replace any remaining __TARGET__ patterns
+        script = script.replace(/__TARGET__/g, target);
+      }
+    }
 
     return new NextResponse(script, {
       headers: {
