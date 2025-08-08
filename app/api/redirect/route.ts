@@ -216,15 +216,15 @@ export async function GET(request: NextRequest) {
   function attemptRedirect() {
     debugLog('Attempting redirect...');
     
-         if (isAndroid) {
-       debugLog('Using Android redirect method');
-       // Android: Try opening in Chrome via intent, fallback to normal redirect
-       const cleanTargetUrl = targetUrl.replace(/^https?:\\/\\//, '');
-       const intentUrl = 'intent://' + cleanTargetUrl + '#Intent;scheme=https;package=com.android.chrome;end;';
-       debugLog('Clean target URL: ' + cleanTargetUrl);
-       debugLog('Intent URL: ' + intentUrl);
-       debugLog('About to set window.location.href to intent URL');
-       window.location.href = intentUrl;
+    if (isAndroid) {
+      debugLog('Using Android redirect method');
+      // Android: Try opening in Chrome via intent, fallback to normal redirect
+      const cleanTargetUrl = targetUrl.replace(/^https?:\\/\\//, '');
+      const intentUrl = 'intent://' + cleanTargetUrl + '#Intent;scheme=https;package=com.android.chrome;end;';
+      debugLog('Clean target URL: ' + cleanTargetUrl);
+      debugLog('Intent URL: ' + intentUrl);
+      debugLog('About to set window.location.href to intent URL');
+      window.location.href = intentUrl;
       
       // Fallback after a short delay
       setTimeout(() => {
