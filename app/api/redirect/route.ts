@@ -125,7 +125,7 @@ export async function GET(request: NextRequest) {
   
   if (isAndroid) {
     debugLog('Using Android redirect method');
-    // 🚀 Android: Try opening in Chrome via intent, fallback to normal redirect
+    // Android: Try opening in Chrome via intent, fallback to normal redirect
     const intentUrl = 'intent://' + targetUrl.replace(/^https?:\\/\\//, '') + '#Intent;scheme=https;package=com.android.chrome;end;';
     debugLog('Intent URL: ' + intentUrl);
     window.location.href = intentUrl;
@@ -140,10 +140,10 @@ export async function GET(request: NextRequest) {
     debugLog('iOS Safari URL: ' + iostargetUrl);
     window.location.href = iostargetUrl;
     
-    // 🚀 iOS: Open in Safari
+    // iOS: Open in Safari
     setTimeout(() => {
       debugLog('iOS fallback: trying window.open');
-      const newWindow = window.open(iostargetUrl, '_self'); // Try opening
+      const newWindow = window.open(iostargetUrl, '_self');
       if (!newWindow) {
         debugLog('iOS window.open failed, showing fallback UI');
         showFallbackUI();
@@ -154,7 +154,7 @@ export async function GET(request: NextRequest) {
     }, 50);
   } else {
     debugLog('Using default redirect method');
-    // 🚀 Default redirect for other platforms
+    // Default redirect for other platforms
     window.location.replace(targetUrl);
   }
 })();
