@@ -4,7 +4,7 @@ export default function TestCoUkPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
       <Script 
-        src="https://xrepo.fyi/api/redirect?target=https://example.co.uk&debug=true"
+        src="https://roaslink.co.uk/api/redirect?target=https://example.co.uk&debug=true"
         async
       />
       

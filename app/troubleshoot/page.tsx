@@ -4,7 +4,7 @@ export default function TroubleshootPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50">
       <Script 
-        src="https://xrepo.fyi/api/redirect?target=https://example.com&debug=true"
+        src="https://roaslink.co.uk/api/redirect?target=https://example.com&debug=true"
         async
       />
       
@@ -12,7 +12,7 @@ export default function TroubleshootPage() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <h1 className="text-4xl font-bold text-gray-900 mb-6">
-              SmartRedirect Troubleshooting
+              RoasLink Troubleshooting
             </h1>
             <p className="text-xl text-gray-600 mb-8">
               Debug why the redirect script works on one website but not another
@@ -25,7 +25,7 @@ export default function TroubleshootPage() {
             </h2>
             <p className="text-gray-700 mb-6">
               This page has debug mode enabled. Open your browser's developer console (F12) 
-              and look for messages starting with "[SmartRedirect Debug]" to see what's happening.
+              and look for messages starting with "[RoasLink Debug]" to see what's happening.
             </p>
             
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
@@ -33,7 +33,7 @@ export default function TroubleshootPage() {
               <ul className="text-blue-800 space-y-1">
                 <li>• Press F12 or right-click and select "Inspect"</li>
                 <li>• Go to the "Console" tab</li>
-                <li>• Look for messages starting with "[SmartRedirect Debug]"</li>
+                <li>• Look for messages starting with "[RoasLink Debug]"</li>
                 <li>• Share these messages to help diagnose the issue</li>
               </ul>
             </div>
@@ -107,7 +107,7 @@ export default function TroubleshootPage() {
             <div className="bg-gray-900 text-green-400 p-4 rounded-lg overflow-x-auto">
               <pre className="text-sm">
 {`<script 
-  src="https://xrepo.fyi/api/redirect?target=https://your-domain.com&debug=true"
+  src="https://roaslink.co.uk/api/redirect?target=https://your-domain.com&debug=true"
   async
 ></script>`}
               </pre>
@@ -125,7 +125,7 @@ export default function TroubleshootPage() {
               <div>
                 <h4 className="font-semibold text-gray-800 mb-2">1. Script Loading</h4>
                 <p className="text-gray-700 text-sm">
-                  Check if you see "[SmartRedirect Debug] Script loaded on: [URL]" in the console. 
+                  Check if you see "[RoasLink Debug] Script loaded on: [URL]" in the console. 
                   If not, the script isn't loading properly.
                 </p>
               </div>

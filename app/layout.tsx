@@ -5,20 +5,20 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "SmartRedirect - Universal In-App Browser Redirect Solution",
+  title: "RoasLink - Universal In-App Browser Redirect Solution",
   description: "Seamlessly redirect users from in-app browsers to native browsers. Increase conversion rates by 40% with our intelligent redirect solution.",
   keywords: "in-app browser redirect, social media redirect, native browser, conversion optimization, SaaS",
-  authors: [{ name: "SmartRedirect Team" }],
+  authors: [{ name: "RoasLink Team" }],
   openGraph: {
-    title: "SmartRedirect - Universal In-App Browser Redirect",
+    title: "RoasLink - Universal In-App Browser Redirect",
     description: "Seamlessly redirect users from in-app browsers to native browsers. Increase conversion rates by 40%.",
     type: "website",
-    url: "https://xrepo.fyi",
-    siteName: "xrep",
+    url: "https://roaslink.co.uk",
+    siteName: "roaslink",
   },
   twitter: {
     card: "summary_large_image",
-    title: "SmartRedirect - Universal In-App Browser Redirect",
+    title: "RoasLink - Universal In-App Browser Redirect",
     description: "Seamlessly redirect users from in-app browsers to native browsers.",
   },
 };

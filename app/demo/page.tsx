@@ -6,14 +6,14 @@ export default function DemoPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
       <Script 
-        src="https://xrepo.fyi/api/redirect?target=https://example.com"
+        src="https://roaslink.co.uk/api/redirect?target=https://example.com"
         async
       />
       
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-2xl mx-auto text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-6">
-            SmartRedirect Demo
+            RoasLink Demo
           </h1>
           <p className="text-xl text-gray-600 mb-8">
             This page demonstrates the redirect functionality. 

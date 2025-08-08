@@ -14,7 +14,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <h1 className="text-5xl font-bold text-gray-900 mb-6">
-              SmartRedirect
+              RoasLink
             </h1>
             <p className="text-xl text-gray-600 mb-8">
               Universal In-App Browser Redirect Solution
@@ -53,7 +53,7 @@ export default function Home() {
                 </h3>
                 <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
                   <p className="text-gray-700 mb-2">
-                    <strong>your-domain.com</strong> - Your SmartRedirect API domain
+                    <strong>your-domain.com</strong> - Your RoasLink API domain
                   </p>
                   <p className="text-gray-700">
                     <strong>your-target-domain.com</strong> - The domain you want users to be redirected to
@@ -70,7 +70,7 @@ export default function Home() {
 {`<!-- In your layout.html or _document.js -->
 <head>
   <script 
-    src="https://xrepo.fyi/api/redirect?target=https://myapp.com"
+    src="https://roaslink.co.uk/api/redirect?target=https://myapp.com"
     async
   ></script>
 </head>`}
@@ -148,7 +148,7 @@ export default function Home() {
             <div className="bg-gray-900 text-green-400 p-4 rounded-lg overflow-x-auto">
               <pre className="text-sm">
 {`<script 
-  src="https://xrepo.fyi/api/redirect?target=https://example.com"
+  src="https://roaslink.co.uk/api/redirect?target=https://example.com"
   async
 ></script>`}
               </pre>
