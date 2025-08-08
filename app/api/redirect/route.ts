@@ -9,9 +9,11 @@ export async function GET(request: NextRequest) {
     return new NextResponse('Missing required parameter: target', { status: 400 });
   }
 
-  // Basic domain validation
-  const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/;
-  if (!domainRegex.test(target.replace(/^https?:\/\//, ''))) {
+  // Basic domain validation - supports .co.uk, .com.au, etc.
+  const cleanTarget = target.replace(/^https?:\/\//, '');
+  // More permissive regex that handles subdomains and multi-level TLDs
+  const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9](\.[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9])*\.[a-zA-Z]{2,}$/;
+  if (!domainRegex.test(cleanTarget)) {
     return new NextResponse('Invalid domain format', { status: 400 });
   }
 
