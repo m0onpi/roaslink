@@ -9,11 +9,9 @@ export async function GET(request: NextRequest) {
     return new NextResponse('Missing required parameter: target', { status: 400 });
   }
 
-  // Basic domain validation - supports .co.uk, .com.au, etc.
-  const cleanTarget = target.replace(/^https?:\/\//, '');
-  // More permissive regex that handles subdomains and multi-level TLDs
-  const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9](\.[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9])*\.[a-zA-Z]{2,}$/;
-  if (!domainRegex.test(cleanTarget)) {
+  // Basic domain validation
+  const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/;
+  if (!domainRegex.test(target.replace(/^https?:\/\//, ''))) {
     return new NextResponse('Invalid domain format', { status: 400 });
   }
 
@@ -21,30 +19,45 @@ export async function GET(request: NextRequest) {
 (function() {
   'use strict';
   
-  const baseUrl = '${target}';
-  let needsUserAction = false;
+  // Configuration - users can modify these values
+  const TARGET_DOMAIN = '${target}';
+  const ENABLE_REDIRECT = true; // Set to false to disable redirect functionality
+  const DEBUG_MODE = ${debug};
   
   // Debug logging function
   function debugLog(message) {
-    ${debug ? 'console.log("[SmartRedirect Debug]", message);' : ''}
+    if (DEBUG_MODE) {
+      console.log('[SmartRedirect Debug]', message);
+    }
   }
   
   debugLog('Script loaded on: ' + window.location.href);
-  debugLog('Target domain: ' + baseUrl);
+  debugLog('User Agent: ' + navigator.userAgent);
+  
+  // Don't run if redirect is disabled
+  if (!ENABLE_REDIRECT) {
+    debugLog('Redirect disabled by configuration');
+    return;
+  }
   
   // Check if we're already on the target domain
-  if (window.location.hostname === baseUrl.replace(/^https?:\\/\\//, '')) {
+  const currentHostname = window.location.hostname;
+  const targetHostname = TARGET_DOMAIN.replace(/^https?:\\/\\//, '');
+  debugLog('Current hostname: ' + currentHostname);
+  debugLog('Target hostname: ' + targetHostname);
+  
+  if (currentHostname === targetHostname) {
     debugLog('Already on target domain, skipping redirect');
     return;
   }
   
   // Check if we're in a native browser or in-app browser
   const userAgent = navigator.userAgent.toLowerCase();
-  debugLog('User agent: ' + userAgent);
+  debugLog('User agent (lowercase): ' + userAgent);
   
   const isNativeBrowser = 
     userAgent.includes("safari") && !userAgent.includes("chrome") || // Native Safari
-    userAgent.includes("chrome") && !userAgent.includes("instagram") && !userAgent.includes("facebook") && !userAgent.includes("twitter") || // Native Chrome
+    userAgent.includes("chrome") && !userAgent.includes("instagram") && !userAgent.includes("facebook") && !userAgent.includes("twitter") && !userAgent.includes("whatsapp") && !userAgent.includes("tiktok") && !userAgent.includes("snapchat") || // Native Chrome
     userAgent.includes("firefox") || // Firefox
     userAgent.includes("edge") || // Edge
     userAgent.includes("opera"); // Opera
@@ -61,8 +74,7 @@ export async function GET(request: NextRequest) {
   
   // Get current path and preserve it in the redirect
   const currentPath = window.location.pathname + window.location.search;
-  const targetUrl = baseUrl + currentPath;
-  debugLog('Current path: ' + currentPath);
+  const targetUrl = TARGET_DOMAIN + currentPath;
   debugLog('Target URL: ' + targetUrl);
   
   const isiOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
@@ -71,8 +83,8 @@ export async function GET(request: NextRequest) {
   debugLog('Is Android: ' + isAndroid);
   
   // Function to show fallback UI
-  function showFallbackUI() {
-    debugLog('Showing fallback UI');
+  function showFallbackUI(fallbackUrl) {
+    debugLog('Showing fallback UI for: ' + fallbackUrl);
     
     // Check if overlay already exists
     if (document.getElementById('smartredirect-overlay')) {
@@ -93,70 +105,131 @@ export async function GET(request: NextRequest) {
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      z-index: 9999;
+      z-index: 999999;
       padding: 20px;
       text-align: center;
       color: white;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     \`;
     
     overlay.innerHTML = \`
-      <p style="margin-bottom: 20px; font-size: 16px;">
-        We couldn't open the link automatically. Please tap the button below to open it in Safari.
-      </p>
-      <a href="\${targetUrl}" style="
-        padding: 12px 24px;
-        background: #0070f3;
-        color: #fff;
-        border-radius: 8px;
-        text-decoration: none;
-        font-size: 16px;
-        font-weight: bold;
-      ">
-        Open in Safari
-      </a>
+      <div style="max-width: 400px; width: 100%;">
+        <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 600;">
+          Open in Browser
+        </h2>
+        <p style="margin-bottom: 30px; font-size: 16px; line-height: 1.5; opacity: 0.9;">
+          For the best experience, please open this link in your native browser.
+        </p>
+        <a href="\${fallbackUrl}" style="
+          display: inline-block;
+          padding: 14px 28px;
+          background: #0070f3;
+          color: #fff;
+          border-radius: 8px;
+          text-decoration: none;
+          font-size: 16px;
+          font-weight: 600;
+          transition: background-color 0.2s;
+        " onmouseover="this.style.backgroundColor='#0051cc'" onmouseout="this.style.backgroundColor='#0070f3'">
+          Open in Browser
+        </a>
+        <button onclick="document.getElementById('smartredirect-overlay').remove()" style="
+          display: block;
+          margin-top: 16px;
+          padding: 8px 16px;
+          background: transparent;
+          color: #ccc;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 14px;
+        " onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
+          Continue in App
+        </button>
+      </div>
     \`;
     
     document.body.appendChild(overlay);
     debugLog('Fallback UI added to DOM');
   }
   
-  // Execute redirect logic
-  debugLog('Starting redirect process...');
-  
-  if (isAndroid) {
-    debugLog('Using Android redirect method');
-    // 🚀 Android: Try opening in Chrome via intent, fallback to normal redirect
-    const intentUrl = 'intent://' + targetUrl.replace(/^https?:\\/\\//, '') + '#Intent;scheme=https;package=com.android.chrome;end;';
-    debugLog('Intent URL: ' + intentUrl);
-    window.location.href = intentUrl;
+  // Function to attempt redirect
+  function attemptRedirect() {
+    debugLog('Attempting redirect...');
     
-    setTimeout(() => {
-      debugLog('Android fallback: redirecting to ' + targetUrl);
-      window.location.href = targetUrl; // Fallback if intent fails
-    }, 1000);
-  } else if (isiOS) {
-    debugLog('Using iOS redirect method');
-    const iostargetUrl = 'x-safari-' + targetUrl;
-    debugLog('iOS Safari URL: ' + iostargetUrl);
-    window.location.href = iostargetUrl;
-    
-    // iOS: Open in Safari
-    setTimeout(() => {
-      debugLog('iOS fallback: trying window.open');
-      const newWindow = window.open(iostargetUrl, '_self'); // Try opening
-      if (!newWindow) {
-        debugLog('iOS window.open failed, showing fallback UI');
-        showFallbackUI();
-      } else {
-        debugLog('iOS window.open successful');
-        newWindow.opener = true;
+    if (isAndroid) {
+      debugLog('Using Android redirect method');
+      // Android: Try opening in Chrome via intent, fallback to normal redirect
+      const intentUrl = 'intent://' + targetUrl.replace(/^https?:\\/\\//, '') + '#Intent;scheme=https;package=com.android.chrome;end;';
+      debugLog('Intent URL: ' + intentUrl);
+      window.location.href = intentUrl;
+      
+      // Fallback after a short delay
+      setTimeout(() => {
+        debugLog('Checking if redirect was successful...');
+        if (window.location.href !== targetUrl) {
+          debugLog('Redirect failed, showing fallback UI');
+          showFallbackUI(targetUrl);
+        } else {
+          debugLog('Redirect successful');
+        }
+      }, 1500);
+    } else if (isiOS) {
+      debugLog('Using iOS redirect method');
+      // iOS: Try multiple approaches
+      let redirectAttempted = false;
+      
+      // Method 1: Try Safari-specific URL
+      try {
+        const safariUrl = 'x-safari-' + targetUrl;
+        debugLog('Safari URL: ' + safariUrl);
+        window.location.href = safariUrl;
+        redirectAttempted = true;
+        debugLog('Safari redirect attempted');
+      } catch (e) {
+        debugLog('Safari redirect failed: ' + e.message);
       }
-    }, 50);
-  } else {
-    debugLog('Using default redirect method');
-    // 🚀 Default redirect for other platforms
-    window.location.replace(targetUrl);
+      
+      // Method 2: Try window.open
+      setTimeout(() => {
+        if (!redirectAttempted) {
+          debugLog('Trying window.open method');
+          const newWindow = window.open(targetUrl, '_self');
+          if (!newWindow) {
+            debugLog('window.open failed, showing fallback UI');
+            showFallbackUI(targetUrl);
+          } else {
+            debugLog('window.open successful');
+          }
+        } else {
+          // Check if we're still on the same page
+          setTimeout(() => {
+            debugLog('Checking if Safari redirect was successful...');
+            if (window.location.href.indexOf(targetUrl) === -1) {
+              debugLog('Safari redirect failed, showing fallback UI');
+              showFallbackUI(targetUrl);
+            } else {
+              debugLog('Safari redirect successful');
+            }
+          }, 1000);
+        }
+      }, 100);
+    } else {
+      debugLog('Using default redirect method');
+      // Default redirect for other platforms
+      try {
+        window.location.replace(targetUrl);
+        debugLog('Default redirect executed');
+      } catch (e) {
+        debugLog('Default redirect failed: ' + e.message);
+        showFallbackUI(targetUrl);
+      }
+    }
   }
+  
+  // Execute redirect
+  debugLog('Starting redirect process...');
+  attemptRedirect();
 })();
 `;
 
