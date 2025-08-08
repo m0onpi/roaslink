@@ -93,9 +93,17 @@ export async function GET(request: NextRequest) {
   const targetHostname = TARGET_DOMAIN.replace(/^https?:\\/\\//, '');
   debugLog('Current hostname: ' + currentHostname);
   debugLog('Target hostname: ' + targetHostname);
+  debugLog('Hostname comparison: "' + currentHostname + '" === "' + targetHostname + '" = ' + (currentHostname === targetHostname));
   
-  if (currentHostname === targetHostname) {
-    debugLog('Already on target domain, skipping redirect');
+  // Also check if we're on a subdomain of the target
+  const isOnTargetDomain = currentHostname === targetHostname || 
+                          currentHostname.endsWith('.' + targetHostname) ||
+                          targetHostname.endsWith('.' + currentHostname);
+  
+  debugLog('Is on target domain (including subdomains): ' + isOnTargetDomain);
+  
+  if (isOnTargetDomain) {
+    debugLog('Already on target domain or subdomain, skipping redirect');
     return;
   }
   
@@ -123,7 +131,10 @@ export async function GET(request: NextRequest) {
   // Get current path and preserve it in the redirect
   const currentPath = window.location.pathname + window.location.search;
   const targetUrl = TARGET_DOMAIN + currentPath;
+  debugLog('Current path: ' + currentPath);
+  debugLog('Target domain: ' + TARGET_DOMAIN);
   debugLog('Target URL: ' + targetUrl);
+  debugLog('Full target URL length: ' + targetUrl.length);
   
   const isiOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
   const isAndroid = /Android/.test(navigator.userAgent);
@@ -205,12 +216,15 @@ export async function GET(request: NextRequest) {
   function attemptRedirect() {
     debugLog('Attempting redirect...');
     
-    if (isAndroid) {
-      debugLog('Using Android redirect method');
-      // Android: Try opening in Chrome via intent, fallback to normal redirect
-      const intentUrl = 'intent://' + targetUrl.replace(/^https?:\\/\\//, '') + '#Intent;scheme=https;package=com.android.chrome;end;';
-      debugLog('Intent URL: ' + intentUrl);
-      window.location.href = intentUrl;
+         if (isAndroid) {
+       debugLog('Using Android redirect method');
+       // Android: Try opening in Chrome via intent, fallback to normal redirect
+       const cleanTargetUrl = targetUrl.replace(/^https?:\\/\\//, '');
+       const intentUrl = 'intent://' + cleanTargetUrl + '#Intent;scheme=https;package=com.android.chrome;end;';
+       debugLog('Clean target URL: ' + cleanTargetUrl);
+       debugLog('Intent URL: ' + intentUrl);
+       debugLog('About to set window.location.href to intent URL');
+       window.location.href = intentUrl;
       
       // Fallback after a short delay
       setTimeout(() => {
