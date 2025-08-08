@@ -11,37 +11,26 @@ export async function GET(request: NextRequest) {
     return new NextResponse('Missing target', { status: 400 });
   }
 
-  // Basic target domain validation (prevent JS injection abuse)
-  const cleanTarget = target.replace(/^https?:\/\//, '');
-  const domainRegex = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  if (!domainRegex.test(cleanTarget)) {
-    return new NextResponse('Invalid target domain', { status: 400 });
-  }
+  // Server-side browser detection - completely hidden from client
+  const isNativeBrowser = 
+    userAgent.toLowerCase().includes("safari") && !userAgent.toLowerCase().includes("chrome") ||
+    userAgent.toLowerCase().includes("chrome") && !userAgent.toLowerCase().includes("instagram") && !userAgent.toLowerCase().includes("facebook") && !userAgent.toLowerCase().includes("twitter") ||
+    userAgent.toLowerCase().includes("firefox") ||
+    userAgent.toLowerCase().includes("edge") ||
+    userAgent.toLowerCase().includes("opera");
 
-  // Server-side detection
-  const ua = userAgent.toLowerCase();
-  const isNativeBrowser =
-    (ua.includes('safari') && !ua.includes('chrome')) ||
-    (ua.includes('chrome') &&
-      !ua.includes('instagram') &&
-      !ua.includes('facebook') &&
-      !ua.includes('twitter')) ||
-    ua.includes('firefox') ||
-    ua.includes('edge') ||
-    ua.includes('opera');
-
-  // ✅ Native browser: do server redirect
+  // For native browsers: direct HTTP redirect
   if (isNativeBrowser) {
     return NextResponse.redirect(target);
   }
 
-  // ❌ In-app: return obfuscated JS
+  // For in-app browsers: return obfuscated script
   try {
-    const obfuscatedPath = join(process.cwd(), 'test.obf.js');
-    const rawScript = readFileSync(obfuscatedPath, 'utf8');
-    const scriptWithTarget = rawScript.replace(/__TARGET__/g, target);
+    const rawScript = readFileSync(join(process.cwd(), 'test.obf.js'), 'utf8');
+    // Replace the target placeholder in the obfuscated script
+    const script = rawScript.replace(/\$\{target\}/g, target);
 
-    return new NextResponse(scriptWithTarget, {
+    return new NextResponse(script, {
       headers: {
         'Content-Type': 'application/javascript',
         'Cache-Control': 'public, max-age=3600',
@@ -51,6 +40,6 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    return new NextResponse('Obfuscated script not found', { status: 500 });
+    return new NextResponse('Script file not found', { status: 500 });
   }
 }
