@@ -1,66 +1,61 @@
-var ___ = "__TARGET__";
-(function() {
+(function () {
   'use strict';
-  
-  const baseUrl = ___;
+
+  const baseUrl = '__TARGET__';
   let needsUserAction = false;
-  
-  // Debug logging function
+
   function debugLog(message) {
-    
+    // console.log('[DEBUG]', message); // Uncomment if needed
   }
-  
+
   debugLog('Script loaded on: ' + window.location.href);
   debugLog('Target domain: ' + baseUrl);
-  
-  // Check if we're already on the target domain
+
   if (window.location.hostname === baseUrl.replace(/^https?:\/\//, '')) {
     debugLog('Already on target domain, skipping redirect');
     return;
   }
-  
-  // Check if we're in a native browser or in-app browser
+
   const userAgent = navigator.userAgent.toLowerCase();
   debugLog('User agent: ' + userAgent);
-  
-  const isNativeBrowser = 
-    userAgent.includes("safari") && !userAgent.includes("chrome") || // Native Safari
-    userAgent.includes("chrome") && !userAgent.includes("instagram") && !userAgent.includes("facebook") && !userAgent.includes("twitter") || // Native Chrome
-    userAgent.includes("firefox") || // Firefox
-    userAgent.includes("edge") || // Edge
-    userAgent.includes("opera"); // Opera
-  
+
+  const isNativeBrowser =
+    (userAgent.includes('safari') && !userAgent.includes('chrome')) ||
+    (userAgent.includes('chrome') &&
+      !userAgent.includes('instagram') &&
+      !userAgent.includes('facebook') &&
+      !userAgent.includes('twitter')) ||
+    userAgent.includes('firefox') ||
+    userAgent.includes('edge') ||
+    userAgent.includes('opera');
+
   debugLog('Is native browser: ' + isNativeBrowser);
-  
-  // Only redirect if NOT in a native browser
+
   if (isNativeBrowser) {
     debugLog('User is in native browser, no redirect needed');
     return;
   }
-  
+
   debugLog('User is in in-app browser, proceeding with redirect');
-  
-  // Get current path and preserve it in the redirect
+
   const currentPath = window.location.pathname + window.location.search;
   const targetUrl = baseUrl + currentPath;
   debugLog('Current path: ' + currentPath);
   debugLog('Target URL: ' + targetUrl);
-  
+
   const isiOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
   const isAndroid = /Android/.test(navigator.userAgent);
   debugLog('Is iOS: ' + isiOS);
   debugLog('Is Android: ' + isAndroid);
-  
-  // Function to show fallback UI
+
   function showFallbackUI() {
     debugLog('Showing fallback UI');
-    
-    // Check if overlay already exists
+
     if (document.getElementById('smartredirect-overlay')) {
       debugLog('Overlay already exists, skipping');
       return;
     }
-    
+
     const overlay = document.createElement('div');
     overlay.id = 'smartredirect-overlay';
     overlay.style.cssText = `
@@ -79,7 +74,7 @@ var ___ = "__TARGET__";
       text-align: center;
       color: white;
     `;
-    
+
     overlay.innerHTML = `
       <p style="margin-bottom: 20px; font-size: 16px;">
         We couldn't open the link automatically. Please tap the button below to open it in Safari.
@@ -96,32 +91,32 @@ var ___ = "__TARGET__";
         Open in Safari
       </a>
     `;
-    
+
     document.body.appendChild(overlay);
     debugLog('Fallback UI added to DOM');
   }
-  
-  // Execute redirect logic
+
   debugLog('Starting redirect process...');
-  
+
   if (isAndroid) {
     debugLog('Using Android redirect method');
-    // Android: Try opening in Chrome via intent, fallback to normal redirect
-    const intentUrl = 'intent://' + targetUrl.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end;';
+    const intentUrl =
+      'intent://' +
+      targetUrl.replace(/^https?:\/\//, '') +
+      '#Intent;scheme=https;package=com.android.chrome;end;';
     debugLog('Intent URL: ' + intentUrl);
     window.location.href = intentUrl;
-    
+
     setTimeout(() => {
       debugLog('Android fallback: redirecting to ' + targetUrl);
-      window.location.href = targetUrl; // Fallback if intent fails
+      window.location.href = targetUrl;
     }, 1000);
   } else if (isiOS) {
     debugLog('Using iOS redirect method');
     const iostargetUrl = 'x-safari-' + targetUrl;
     debugLog('iOS Safari URL: ' + iostargetUrl);
     window.location.href = iostargetUrl;
-    
-    // iOS: Open in Safari
+
     setTimeout(() => {
       debugLog('iOS fallback: trying window.open');
       const newWindow = window.open(iostargetUrl, '_self');
@@ -135,7 +130,6 @@ var ___ = "__TARGET__";
     }, 50);
   } else {
     debugLog('Using default redirect method');
-    // Default redirect for other platforms
     window.location.replace(targetUrl);
   }
 })();
