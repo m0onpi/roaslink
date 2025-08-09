@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test</title>
+</head>
+<body>
+    <h1>Testing xrepo.fyi API</h1>
+    <p>Check the console for the script output</p>
+    
+    <script>
+        // Test the API endpoint
+        fetch('https://xrepo.fyi/api/redirect?domain=example.com&target=https://example.com')
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                return response.text();
+            })
+            .then(script => {
+                console.log('Script received:', script.substring(0, 200) + '...');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    </script>
+</body>
+</html>
+
