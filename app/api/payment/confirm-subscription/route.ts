@@ -10,9 +10,9 @@ const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {
-    const { subscriptionId, customerId, plan, paymentIntentId } = await req.json();
+    const { customerId, plan, paymentIntentId, amount } = await req.json();
     
-    if (!subscriptionId || !customerId || !plan || !paymentIntentId) {
+    if (!customerId || !plan || !paymentIntentId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -26,7 +26,25 @@ export async function POST(req: Request) {
     const customer = await stripe.customers.retrieve(customerId);
     const customerEmail = (customer as any).email;
 
+    let subscription = null;
+
     if (customerEmail) {
+      // Create recurring subscription after successful payment
+      const price = await stripe.prices.create({
+        currency: 'gbp',
+        unit_amount: amount || Math.round((paymentIntent.amount)),
+        recurring: { 
+          interval: plan === 'week' ? 'week' : plan === 'month' ? 'month' : 'year' 
+        },
+        product_data: { name: `RoasLink ${plan} Plan` },
+      });
+
+      subscription = await stripe.subscriptions.create({
+        customer: customerId,
+        items: [{ price: price.id }],
+        metadata: { plan, initialPaymentIntentId: paymentIntentId },
+      });
+
       // Calculate subscription end date
       const subscriptionEndsAt = new Date();
       if (plan === 'week') {
@@ -43,7 +61,7 @@ export async function POST(req: Request) {
         update: {
           subscriptionStatus: 'active',
           stripeCustomerId: customerId,
-          subscriptionId: subscriptionId,
+          subscriptionId: subscription.id,
           planType: plan,
           subscriptionEndsAt,
         },
@@ -51,7 +69,7 @@ export async function POST(req: Request) {
           email: customerEmail,
           subscriptionStatus: 'active',
           stripeCustomerId: customerId,
-          subscriptionId: subscriptionId,
+          subscriptionId: subscription.id,
           planType: plan,
           subscriptionEndsAt,
         },
@@ -60,7 +78,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       message: 'Subscription confirmed successfully',
-      subscriptionId,
+      subscriptionId: subscription?.id,
     });
   } catch (error) {
     console.error('Confirm subscription error:', error);

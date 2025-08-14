@@ -109,8 +109,16 @@ function CardSetupForm({ onSuccess, onError, formData, selectedPackageDetails, a
         }),
       });
       
-      if (!res.ok) throw new Error('Failed to initialize payment');
-      const { clientSecret, customerId, subscriptionId } = await res.json();
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to initialize payment');
+      }
+      
+      const { clientSecret, customerId, paymentIntentId, plan } = await res.json();
+      
+      if (!clientSecret) {
+        throw new Error('No payment client secret received - please try again');
+      }
 
       if (!stripe || !elements) throw new Error('Stripe not loaded');
       const cardElement = elements.getElement(CardElement);
@@ -134,10 +142,10 @@ function CardSetupForm({ onSuccess, onError, formData, selectedPackageDetails, a
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          subscriptionId,
           customerId,
-          plan: selectedPackageDetails.id,
+          plan: plan,
           paymentIntentId: paymentIntent.id,
+          amount: finalAmount,
         }),
         credentials: 'include',
       });
