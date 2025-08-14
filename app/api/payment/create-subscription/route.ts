@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { PrismaClient } from '@prisma/client';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-07-30.basil',
 });
+
+const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {
@@ -38,6 +41,42 @@ export async function POST(req: Request) {
       expand: ['latest_invoice.payment_intent'],
       metadata: { plan },
     });
+
+    // Get customer email from Stripe
+    const customer = await stripe.customers.retrieve(customerId);
+    const customerEmail = (customer as any).email;
+
+    if (customerEmail) {
+      // Calculate subscription end date
+      const subscriptionEndsAt = new Date();
+      if (plan === 'week') {
+        subscriptionEndsAt.setDate(subscriptionEndsAt.getDate() + 7);
+      } else if (plan === 'month') {
+        subscriptionEndsAt.setMonth(subscriptionEndsAt.getMonth() + 1);
+      } else if (plan === 'year') {
+        subscriptionEndsAt.setFullYear(subscriptionEndsAt.getFullYear() + 1);
+      }
+
+      // Update user subscription status in database
+      await prisma.user.upsert({
+        where: { email: customerEmail },
+        update: {
+          subscriptionStatus: 'active',
+          stripeCustomerId: customerId,
+          subscriptionId: subscription.id,
+          planType: plan,
+          subscriptionEndsAt,
+        },
+        create: {
+          email: customerEmail,
+          subscriptionStatus: 'active',
+          stripeCustomerId: customerId,
+          subscriptionId: subscription.id,
+          planType: plan,
+          subscriptionEndsAt,
+        },
+      });
+    }
 
     return NextResponse.json({
       subscriptionId: subscription.id,

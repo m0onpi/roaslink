@@ -17,8 +17,15 @@ model User {
   name          String?
   emailVerified DateTime?
   onboardingData Json?
+  subscriptionStatus String? // active, inactive, trial, cancelled
+  stripeCustomerId String?
+  subscriptionId String?
+  planType      String? // week, month, year, lifetime
+  subscriptionEndsAt DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  
+  domains       Domain[]
 
   @@map("users")
 }
@@ -28,8 +35,13 @@ model User {
 model Domain {
   id        String   @id @default(cuid())
   domain    String   @unique
+  userId    String
+  redirectUrl String
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("domains")
 } 

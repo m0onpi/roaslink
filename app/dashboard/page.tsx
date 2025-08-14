@@ -2,62 +2,149 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { FaPlus, FaGlobe, FaCopy, FaTrash, FaCode, FaCheckCircle, FaArrowRight, FaRocket } from 'react-icons/fa';
+import { FaPlus, FaGlobe, FaCopy, FaTrash, FaCode, FaCheckCircle, FaArrowRight, FaRocket, FaSpinner, FaLock, FaExclamationTriangle } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 interface Domain {
   id: string;
   domain: string;
+  redirectUrl: string;
+  isActive: boolean;
   createdAt: string;
+}
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  subscriptionStatus: string;
+  planType: string;
+  subscriptionEndsAt: string;
 }
 
 export default function DashboardPage() {
   const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [hasAccess, setHasAccess] = useState(false);
   const [domains, setDomains] = useState<Domain[]>([]);
   const [newDomain, setNewDomain] = useState('');
+  const [newRedirectUrl, setNewRedirectUrl] = useState('');
   const [isAddingDomain, setIsAddingDomain] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [copiedScript, setCopiedScript] = useState('');
 
   useEffect(() => {
-    // Simulate loading domains
-    setTimeout(() => {
-      setDomains([
-        { id: '1', domain: 'mywebsite.com', createdAt: '2024-01-15' },
-        { id: '2', domain: 'store.example.com', createdAt: '2024-01-10' }
-      ]);
-      setLoading(false);
-    }, 1000);
+    checkUserAccess();
   }, []);
+
+  useEffect(() => {
+    if (hasAccess) {
+      fetchDomains();
+    }
+  }, [hasAccess]);
+
+  const checkUserAccess = async () => {
+    try {
+      const response = await fetch('/api/auth/check-access', {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          router.push('/auth?next=/dashboard');
+          return;
+        }
+        throw new Error('Failed to check access');
+      }
+
+      const data = await response.json();
+      if (data.hasAccess) {
+        setHasAccess(true);
+        setUser(data.user);
+      } else {
+        setHasAccess(false);
+        setUser(data.user);
+      }
+    } catch (error) {
+      console.error('Access check error:', error);
+      router.push('/auth?next=/dashboard');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchDomains = async () => {
+    try {
+      const response = await fetch('/api/domains', {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch domains');
+      }
+
+      const data = await response.json();
+      setDomains(data.domains);
+    } catch (error) {
+      console.error('Fetch domains error:', error);
+      setError('Failed to load domains');
+    }
+  };
 
   const addDomain = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newDomain.trim()) return;
+    if (!newDomain.trim() || !newRedirectUrl.trim()) return;
 
     setIsAddingDomain(true);
+    setError('');
+    
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch('/api/domains', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          domain: newDomain.trim(),
+          redirectUrl: newRedirectUrl.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to add domain');
+      }
       
-      const domain: Domain = {
-        id: Date.now().toString(),
-        domain: newDomain.trim(),
-        createdAt: new Date().toISOString().split('T')[0]
-      };
-      
-      setDomains([...domains, domain]);
+      setDomains([...domains, data.domain]);
       setNewDomain('');
-    } catch (err) {
-      setError('Failed to add domain');
+      setNewRedirectUrl('');
+    } catch (err: any) {
+      setError(err.message || 'Failed to add domain');
     } finally {
       setIsAddingDomain(false);
     }
   };
 
-  const removeDomain = (id: string) => {
-    setDomains(domains.filter(d => d.id !== id));
+  const removeDomain = async (id: string) => {
+    try {
+      const response = await fetch(`/api/domains/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete domain');
+      }
+
+      setDomains(domains.filter(d => d.id !== id));
+    } catch (error) {
+      console.error('Delete domain error:', error);
+      setError('Failed to delete domain');
+    }
   };
 
   const copyScript = (domain: string) => {
@@ -67,10 +154,61 @@ export default function DashboardPage() {
     setTimeout(() => setCopiedScript(''), 2000);
   };
 
+  const signOut = async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      router.push('/');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-gray-600">Loading your dashboard...</div>
+        <div className="flex items-center gap-3">
+          <FaSpinner className="w-6 h-6 text-blue-600 animate-spin" />
+          <span className="text-lg text-gray-600">Checking your access...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="max-w-md mx-auto text-center p-8">
+          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <FaLock className="w-10 h-10 text-red-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Required</h1>
+          <p className="text-gray-600 mb-6">
+            You need an active subscription to access the dashboard.
+            {user && (
+              <span className="block mt-2 text-sm">
+                Current status: <span className="font-semibold">{user.subscriptionStatus || 'No subscription'}</span>
+              </span>
+            )}
+          </p>
+          <div className="space-y-3">
+            <Link 
+              href="/pricing"
+              className="block w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all"
+            >
+              Choose a Plan
+            </Link>
+            <button 
+              onClick={signOut}
+              className="block w-full px-6 py-3 text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -88,9 +226,17 @@ export default function DashboardPage() {
               <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">RoasLink</h1>
             </div>
             <div className="flex items-center gap-4">
+              {user && (
+                <div className="text-sm text-gray-600">
+                  Welcome, <span className="font-semibold">{user.name}</span>
+                  <span className="block text-xs text-gray-500">
+                    {user.planType} plan
+                  </span>
+                </div>
+              )}
               <Link href="/pricing" className="text-gray-600 hover:text-gray-900 transition-colors">Upgrade</Link>
               <button 
-                onClick={() => router.push('/')}
+                onClick={signOut}
                 className="px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors"
               >
                 Sign Out
@@ -109,7 +255,7 @@ export default function DashboardPage() {
             className="text-center mb-12"
           >
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Welcome to your Dashboard
+              Domain Management Dashboard
             </h1>
             <p className="text-lg text-gray-600">
               Manage your domains and redirect scripts from here
@@ -117,9 +263,14 @@ export default function DashboardPage() {
           </motion.div>
 
           {error && (
-            <div className="mb-6 p-4 bg-red-50 text-red-600 border border-red-200 rounded-xl">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="mb-6 p-4 bg-red-50 text-red-600 border border-red-200 rounded-xl flex items-center gap-3"
+            >
+              <FaExclamationTriangle className="w-5 h-5" />
               {error}
-            </div>
+            </motion.div>
           )}
 
           {/* Add Domain Form */}
@@ -130,37 +281,53 @@ export default function DashboardPage() {
             className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 mb-8"
           >
             <h2 className="text-xl font-bold text-gray-900 mb-4">Add New Domain</h2>
-            <form onSubmit={addDomain} className="flex gap-4">
-              <div className="flex-1">
-                <input
-                  type="text"
-                  value={newDomain}
-                  onChange={(e) => setNewDomain(e.target.value)}
-                  placeholder="example.com"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                />
+            <form onSubmit={addDomain} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Domain</label>
+                  <input
+                    type="text"
+                    value={newDomain}
+                    onChange={(e) => setNewDomain(e.target.value)}
+                    placeholder="example.com"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Redirect URL</label>
+                  <input
+                    type="url"
+                    value={newRedirectUrl}
+                    onChange={(e) => setNewRedirectUrl(e.target.value)}
+                    placeholder="https://your-target-site.com"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    required
+                  />
+                </div>
               </div>
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
                 disabled={isAddingDomain}
-                className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 ${
+                className={`w-full px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 ${
                   isAddingDomain
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg'
                 }`}
               >
                 {isAddingDomain ? (
-                  <motion.div 
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                  />
+                  <>
+                    <FaSpinner className="w-5 h-5 animate-spin" />
+                    Adding Domain...
+                  </>
                 ) : (
-                  <FaPlus className="w-4 h-4" />
+                  <>
+                    <FaPlus className="w-4 h-4" />
+                    Add Domain
+                  </>
                 )}
-                {isAddingDomain ? 'Adding...' : 'Add Domain'}
               </motion.button>
             </form>
           </motion.div>
@@ -171,7 +338,7 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Your Domains</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Your Domains ({domains.length})</h2>
             
             {domains.length === 0 ? (
               <div className="bg-white rounded-2xl p-12 shadow-lg border border-gray-200 text-center">
@@ -191,14 +358,19 @@ export default function DashboardPage() {
                     transition={{ delay: index * 0.1 }}
                     className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-shadow"
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                          <FaGlobe className="w-6 h-6 text-blue-600" />
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                          domain.isActive ? 'bg-green-100' : 'bg-gray-100'
+                        }`}>
+                          <FaGlobe className={`w-6 h-6 ${
+                            domain.isActive ? 'text-green-600' : 'text-gray-400'
+                          }`} />
                         </div>
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900">{domain.domain}</h3>
-                          <p className="text-sm text-gray-500">Added on {domain.createdAt}</p>
+                          <p className="text-sm text-gray-500">→ {domain.redirectUrl}</p>
+                          <p className="text-xs text-gray-400">Added on {new Date(domain.createdAt).toLocaleDateString()}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
