@@ -3,13 +3,17 @@ import Stripe from 'stripe';
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 
-export async function POST(req: Request, { params }: { params: { plan: string } }) {
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ plan: string }> }
+) {
   try {
-    if (!stripeSecretKey) return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 });
-    const stripe = new Stripe(stripeSecretKey, { apiVersion: '2024-06-20' });
+    if (!stripeSecretKey) 
+      return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 });
+    const stripe = new Stripe(stripeSecretKey, { apiVersion: '2025-07-30.basil' });
 
     const { amount, item, data, discountCode } = await req.json();
-    const plan = params.plan;
+    const { plan } = await params;
 
     if (plan === 'lifetime') {
       // One-time payment intent
