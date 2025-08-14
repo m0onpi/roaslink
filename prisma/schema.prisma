@@ -16,11 +16,14 @@ model User {
   password      String?
   name          String?
   emailVerified DateTime?
+  onboardingData Json?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
   @@map("users")
 }
+
+
 
 model Domain {
   id        String   @id @default(cuid())

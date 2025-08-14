@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -38,42 +37,25 @@ export async function POST(req: Request) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-
-    // Create user and verification token in a transaction
-    const user = await prisma.$transaction(async (prisma: PrismaClient) => {
-      // Create user
-      const user = await prisma.user.create({
-        data: {
-          name,
-          email: email.toLowerCase(),
-          password: hashedPassword,
-          onboardingData: {
-            experience,
-            tradingStyle,
-            goals,
-            timeCommitment,
-            riskTolerance,
-            preferredMarkets,
-            tradingFrequency,
-            currentTools,
-            motivation,
-            challenges
-          }
-        },
-      });
-
-      // Create verification token
-      await prisma.verificationToken.create({
-        data: {
-          token: verificationToken,
-          email: user.email,
-          expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
-        },
-      });
-
-      return user;
+    // Create user
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email: email.toLowerCase(),
+        password: hashedPassword,
+        onboardingData: {
+          experience,
+          tradingStyle,
+          goals,
+          timeCommitment,
+          riskTolerance,
+          preferredMarkets,
+          tradingFrequency,
+          currentTools,
+          motivation,
+          challenges
+        }
+      },
     });
 
     // Send verification email
