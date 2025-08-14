@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, Suspense } from 'next/navigation';
 
-export default function CheckoutSuccessPage() {
+function CheckoutSuccessContent() {
   const params = useSearchParams();
   const plan = params.get('plan') || 'your plan';
 
@@ -19,6 +19,20 @@ export default function CheckoutSuccessPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-[#1a1a1a] via-[#2a2a2a] to-[#1a1a1a] text-white flex items-center justify-center px-6">
+        <div className="max-w-lg w-full bg-[#2a2a2a] border border-gray-700/50 rounded-2xl p-8 text-center">
+          <div className="text-gray-400">Loading...</div>
+        </div>
+      </div>
+    }>
+      <CheckoutSuccessContent />
+    </Suspense>
   );
 }
 
