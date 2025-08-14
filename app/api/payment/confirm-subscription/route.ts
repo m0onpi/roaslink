@@ -25,6 +25,13 @@ export async function POST(req: Request) {
     // Get customer email from Stripe
     const customer = await stripe.customers.retrieve(customerId);
     const customerEmail = (customer as any).email;
+    
+    console.log('Processing subscription for customer:', {
+      customerId,
+      customerEmail,
+      plan,
+      paymentIntentId
+    });
 
     let subscription = null;
 
@@ -39,9 +46,21 @@ export async function POST(req: Request) {
         product_data: { name: `RoasLink ${plan} Plan` },
       });
 
+      // Create subscription starting from the next billing period to avoid double charging
+      const nextBillingDate = new Date();
+      if (plan === 'week') {
+        nextBillingDate.setDate(nextBillingDate.getDate() + 7);
+      } else if (plan === 'month') {
+        nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
+      } else if (plan === 'year') {
+        nextBillingDate.setFullYear(nextBillingDate.getFullYear() + 1);
+      }
+
       subscription = await stripe.subscriptions.create({
         customer: customerId,
         items: [{ price: price.id }],
+        billing_cycle_anchor: Math.floor(nextBillingDate.getTime() / 1000),
+        proration_behavior: 'none',
         metadata: { plan, initialPaymentIntentId: paymentIntentId },
       });
 
@@ -56,7 +75,7 @@ export async function POST(req: Request) {
       }
 
       // Update user subscription status in database
-      await (prisma as any).user.upsert({
+      const updatedUser = await (prisma as any).user.upsert({
         where: { email: customerEmail },
         update: {
           subscriptionStatus: 'active',
@@ -73,6 +92,14 @@ export async function POST(req: Request) {
           planType: plan,
           subscriptionEndsAt,
         },
+      });
+      
+      console.log('User subscription updated:', {
+        userId: updatedUser.id,
+        email: updatedUser.email,
+        subscriptionStatus: updatedUser.subscriptionStatus,
+        planType: updatedUser.planType,
+        subscriptionEndsAt: updatedUser.subscriptionEndsAt
       });
     }
 

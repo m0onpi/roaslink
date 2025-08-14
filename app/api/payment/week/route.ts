@@ -41,6 +41,9 @@ export async function POST(req: Request) {
           signup_date: new Date().toISOString(),
         },
       });
+      console.log('Created new Stripe customer:', customer.id, 'for email:', data.email);
+    } else {
+      console.log('Using existing Stripe customer:', customer.id, 'for email:', data.email);
     }
 
     // Check for existing active subscriptions

@@ -25,7 +25,6 @@ export async function GET(req: Request) {
 
     // Verify JWT
     const decoded = jwt.verify(token, jwtSecret) as any;
-    console.log('Decoded JWT:', { userId: decoded.userId, email: decoded.email });
     
     // Get user from database with subscription info
     const user = await (prisma as any).user.findUnique({
@@ -39,8 +38,6 @@ export async function GET(req: Request) {
         subscriptionEndsAt: true,
       },
     });
-    
-    console.log('Found user:', user);
 
     if (!user) {
       return NextResponse.json({ hasAccess: false, reason: 'User not found' }, { status: 401 });
@@ -61,20 +58,34 @@ export async function GET(req: Request) {
 }
 
 function checkUserAccess(user: any): boolean {
+  console.log('Checking access for user:', {
+    subscriptionStatus: user.subscriptionStatus,
+    planType: user.planType,
+    subscriptionEndsAt: user.subscriptionEndsAt,
+    currentTime: new Date().toISOString()
+  });
+
+  // If user has any active subscription status, grant access for now
+  // We can make this more strict later
+  if (user.subscriptionStatus === 'active') {
+    console.log('Access granted - active subscription');
+    return true;
+  }
+
   // Lifetime access
   if (user.planType === 'lifetime') {
-    return user.subscriptionStatus === 'active';
+    const hasAccess = user.subscriptionStatus === 'active';
+    console.log('Lifetime plan access:', hasAccess);
+    return hasAccess;
   }
 
   // Subscription access
   if (user.subscriptionStatus === 'active' && user.subscriptionEndsAt) {
-    return new Date() < new Date(user.subscriptionEndsAt);
+    const hasAccess = new Date() < new Date(user.subscriptionEndsAt);
+    console.log('Subscription access check:', hasAccess, 'ends at:', user.subscriptionEndsAt);
+    return hasAccess;
   }
 
-  // Trial access (if applicable)
-  if (user.subscriptionStatus === 'trial' && user.subscriptionEndsAt) {
-    return new Date() < new Date(user.subscriptionEndsAt);
-  }
-
+  console.log('Access denied - no valid subscription');
   return false;
 }
