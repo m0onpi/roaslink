@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -101,6 +102,41 @@ export async function POST(req: Request) {
         planType: updatedUser.planType,
         subscriptionEndsAt: updatedUser.subscriptionEndsAt
       });
+
+      // Generate new JWT with updated subscription info
+      const jwtSecret = process.env.JWT_SECRET;
+      if (jwtSecret) {
+        const newToken = jwt.sign(
+          { 
+            userId: updatedUser.id,
+            email: updatedUser.email,
+            subscriptionStatus: updatedUser.subscriptionStatus,
+            planType: updatedUser.planType,
+            hasAccess: updatedUser.subscriptionStatus === 'active'
+          },
+          jwtSecret,
+          { expiresIn: '1d' }
+        );
+
+        // Create response with updated JWT
+        const response = NextResponse.json({
+          message: 'Subscription confirmed successfully',
+          subscriptionId: subscription?.id,
+        });
+
+        // Set the new token as an HTTP-only cookie
+        response.cookies.set({
+          name: 'token',
+          value: newToken,
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 1 * 24 * 60 * 60, // 1 day
+          path: '/',
+        });
+
+        return response;
+      }
     }
 
     return NextResponse.json({

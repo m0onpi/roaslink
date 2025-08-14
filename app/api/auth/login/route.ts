@@ -9,9 +9,18 @@ export async function POST(req: Request) {
   try {
     const { email, password } = await req.json();
 
-    // Find user
+    // Find user with subscription info
     const user = await prisma.user.findUnique({
       where: { email },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        password: true,
+        subscriptionStatus: true,
+        planType: true,
+        subscriptionEndsAt: true,
+      },
     });
 
     if (!user) {
@@ -43,12 +52,14 @@ export async function POST(req: Request) {
       );
     }
 
-    // Generate JWT
+    // Generate JWT with subscription info
     const token = jwt.sign(
       { 
         userId: user.id,
         email: user.email,
-        emailVerified: user.emailVerified
+        subscriptionStatus: user.subscriptionStatus,
+        planType: user.planType,
+        hasAccess: user.subscriptionStatus === 'active'
       },
       jwtSecret,
       { expiresIn: '1d' }

@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
 
 export async function GET(req: Request) {
   try {
@@ -26,66 +23,21 @@ export async function GET(req: Request) {
     // Verify JWT
     const decoded = jwt.verify(token, jwtSecret) as any;
     
-    // Get user from database with subscription info
-    const user = await (prisma as any).user.findUnique({
-      where: { id: decoded.userId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        subscriptionStatus: true,
-        planType: true,
-        subscriptionEndsAt: true,
-      },
-    });
-
-    if (!user) {
-      return NextResponse.json({ hasAccess: false, reason: 'User not found' }, { status: 401 });
-    }
-
-    // Check if user has active subscription or lifetime access
-    const hasAccess = checkUserAccess(user);
+    // Check access directly from JWT data (no database call needed)
+    const hasAccess = decoded.hasAccess || decoded.subscriptionStatus === 'active';
 
     return NextResponse.json({
       hasAccess,
-      user,
+      user: {
+        id: decoded.userId,
+        email: decoded.email,
+        subscriptionStatus: decoded.subscriptionStatus,
+        planType: decoded.planType,
+      },
       reason: hasAccess ? 'Access granted' : 'No active subscription',
     });
   } catch (error) {
     console.error('Access check error:', error);
     return NextResponse.json({ hasAccess: false, reason: 'Auth check failed' }, { status: 401 });
   }
-}
-
-function checkUserAccess(user: any): boolean {
-  console.log('Checking access for user:', {
-    subscriptionStatus: user.subscriptionStatus,
-    planType: user.planType,
-    subscriptionEndsAt: user.subscriptionEndsAt,
-    currentTime: new Date().toISOString()
-  });
-
-  // If user has any active subscription status, grant access for now
-  // We can make this more strict later
-  if (user.subscriptionStatus === 'active') {
-    console.log('Access granted - active subscription');
-    return true;
-  }
-
-  // Lifetime access
-  if (user.planType === 'lifetime') {
-    const hasAccess = user.subscriptionStatus === 'active';
-    console.log('Lifetime plan access:', hasAccess);
-    return hasAccess;
-  }
-
-  // Subscription access
-  if (user.subscriptionStatus === 'active' && user.subscriptionEndsAt) {
-    const hasAccess = new Date() < new Date(user.subscriptionEndsAt);
-    console.log('Subscription access check:', hasAccess, 'ends at:', user.subscriptionEndsAt);
-    return hasAccess;
-  }
-
-  console.log('Access denied - no valid subscription');
-  return false;
 }
