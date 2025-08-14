@@ -105,37 +105,49 @@ function PricingContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a1a1a] via-[#2a2a2a] to-[#1a1a1a] text-white py-16 px-6">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="max-w-6xl mx-auto py-16 px-6">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-3">Choose your plan</h1>
-          <p className="text-gray-400">Upgrade when you are ready. Cancel anytime.</p>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Choose your plan</h1>
+          <p className="text-xl text-gray-600">Simple, transparent pricing. Start free, upgrade when ready.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {plans.map((plan) => (
-            <div key={plan.name} className={`rounded-2xl border ${plan.popular ? 'border-green-500/40' : 'border-gray-700/50'} bg-[#2a2a2a] p-6`}>
+            <div key={plan.name} className={`rounded-2xl border ${plan.popular ? 'border-blue-300 ring-2 ring-blue-200' : 'border-gray-200'} bg-white p-8 shadow-lg hover:shadow-xl transition-shadow relative`}>
               {plan.popular && (
-                <div className="mb-3 inline-block rounded-full bg-green-500/20 px-3 py-1 text-xs text-green-300 border border-green-400/30">Popular</div>
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                  <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-full text-sm font-semibold">
+                    Most Popular
+                  </div>
+                </div>
               )}
-              <h3 className="text-2xl font-semibold mb-2">{plan.name}</h3>
-              <div className="text-4xl font-bold mb-4">
-                ${'{'}plan.priceMonthly{'}'}<span className="text-lg text-gray-400">/mo</span>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
+              <div className="text-4xl font-bold text-gray-900 mb-4">
+                ${plan.priceMonthly}<span className="text-lg text-gray-500 font-normal">/mo</span>
               </div>
-              <ul className="text-gray-300 space-y-2 mb-6">
+              <ul className="text-gray-600 space-y-3 mb-8">
                 {plan.features.map((f) => (
-                  <li key={f} className="flex items-center gap-2">
-                    <span className="text-green-400">✓</span>
+                  <li key={f} className="flex items-center gap-3">
+                    <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
+                      <span className="text-green-600 text-sm">✓</span>
+                    </div>
                     <span>{f}</span>
                   </li>
                 ))}
               </ul>
               <button
-                className={`w-full py-3 rounded-lg font-medium transition-colors ${loadingPlan === plan.name ? 'bg-gray-700 text-gray-400' : 'bg-green-600/20 text-green-300 border border-green-500/30 hover:bg-green-600/30'}`}
+                className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 ${
+                  loadingPlan === plan.name 
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                    : plan.popular
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg'
+                      : 'bg-gray-100 text-gray-900 hover:bg-gray-200 border border-gray-300'
+                }`}
                 onClick={() => startCheckout(plan)}
                 disabled={loadingPlan === plan.name}
               >
-                {loadingPlan === plan.name ? 'Redirecting...' : 'Start subscription'}
+                {loadingPlan === plan.name ? 'Redirecting...' : 'Get Started'}
               </button>
             </div>
           ))}
@@ -148,8 +160,8 @@ function PricingContent() {
 export default function PricingPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-[#1a1a1a] text-gray-300">
-        Loading...
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="text-gray-600">Loading...</div>
       </div>
     }>
       <PricingContent />
