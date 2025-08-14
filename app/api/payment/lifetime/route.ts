@@ -6,7 +6,7 @@ const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 export async function POST(req: Request) {
   try {
     if (!stripeSecretKey) return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 });
-    const stripe = new Stripe(stripeSecretKey, { apiVersion: '2024-06-20' });
+    const stripe = new Stripe(stripeSecretKey, { apiVersion: '2025-07-30.basil' });
 
     const { paymentIntentId } = await req.json();
     if (!paymentIntentId) return NextResponse.json({ error: 'Missing paymentIntentId' }, { status: 400 });

@@ -12,7 +12,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 });
     }
 
-    const stripe = new Stripe(stripeSecretKey, { apiVersion: '2024-06-20' });
+    const stripe = new Stripe(stripeSecretKey, { apiVersion: '2025-07-30.basil' });
 
     const { priceId, plan } = await req.json();
     if (!priceId || !plan) {
