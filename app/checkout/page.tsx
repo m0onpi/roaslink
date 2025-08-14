@@ -56,7 +56,7 @@ const packages: Package[] = [
     title: 'Starter',
     description: 'Perfect for small businesses and testing',
     originalPrice: 149.99,
-    price: 99.99,
+    price: 0.99,
     color: 'blue',
     icon: <FaRocket className="w-6 h-6" />,
     features: ['Unlimited redirects', 'All platforms supported', 'Email support', 'Basic analytics']
