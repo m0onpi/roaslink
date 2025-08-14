@@ -37,25 +37,17 @@ export async function POST(req: Request) {
     let subscription = null;
 
     if (customerEmail) {
-      // Create recurring subscription after successful payment
+      // Create recurring subscription after successful payment (all plans are monthly now)
       const price = await stripe.prices.create({
         currency: 'gbp',
         unit_amount: amount || Math.round((paymentIntent.amount)),
-        recurring: { 
-          interval: plan === 'week' ? 'week' : plan === 'month' ? 'month' : 'year' 
-        },
+        recurring: { interval: 'month' },
         product_data: { name: `RoasLink ${plan} Plan` },
       });
 
       // Create subscription starting from the next billing period to avoid double charging
       const nextBillingDate = new Date();
-      if (plan === 'week') {
-        nextBillingDate.setDate(nextBillingDate.getDate() + 7);
-      } else if (plan === 'month') {
-        nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
-      } else if (plan === 'year') {
-        nextBillingDate.setFullYear(nextBillingDate.getFullYear() + 1);
-      }
+      nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
 
       subscription = await stripe.subscriptions.create({
         customer: customerId,
@@ -65,14 +57,18 @@ export async function POST(req: Request) {
         metadata: { plan, initialPaymentIntentId: paymentIntentId },
       });
 
-      // Calculate subscription end date
+      // Calculate subscription end date (all plans are monthly now)
       const subscriptionEndsAt = new Date();
-      if (plan === 'week') {
-        subscriptionEndsAt.setDate(subscriptionEndsAt.getDate() + 7);
-      } else if (plan === 'month') {
-        subscriptionEndsAt.setMonth(subscriptionEndsAt.getMonth() + 1);
-      } else if (plan === 'year') {
-        subscriptionEndsAt.setFullYear(subscriptionEndsAt.getFullYear() + 1);
+      subscriptionEndsAt.setMonth(subscriptionEndsAt.getMonth() + 1);
+
+      // Determine domain limit based on plan
+      let domainLimit = 0;
+      if (plan === 'starter') {
+        domainLimit = 1;
+      } else if (plan === 'growth') {
+        domainLimit = 3;
+      } else if (plan === 'scale') {
+        domainLimit = -1; // unlimited
       }
 
       // Update user subscription status in database
@@ -84,6 +80,7 @@ export async function POST(req: Request) {
           subscriptionId: subscription.id,
           planType: plan,
           subscriptionEndsAt,
+          domainLimit: domainLimit,
         },
         create: {
           email: customerEmail,
@@ -92,6 +89,7 @@ export async function POST(req: Request) {
           subscriptionId: subscription.id,
           planType: plan,
           subscriptionEndsAt,
+          domainLimit: domainLimit,
         },
       });
       

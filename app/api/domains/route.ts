@@ -58,11 +58,11 @@ export async function POST(req: Request) {
     }
 
     const decoded = jwt.verify(token, jwtSecret) as any;
-    const { domain, redirectUrl } = await req.json();
+    const { domain } = await req.json();
 
     // Validate input
-    if (!domain || !redirectUrl) {
-      return NextResponse.json({ error: 'Domain and redirect URL are required' }, { status: 400 });
+    if (!domain) {
+      return NextResponse.json({ error: 'Domain is required' }, { status: 400 });
     }
 
     // Basic domain validation
@@ -71,11 +71,38 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid domain format' }, { status: 400 });
     }
 
-    // Basic URL validation
-    try {
-      new URL(redirectUrl);
-    } catch {
-      return NextResponse.json({ error: 'Invalid redirect URL format' }, { status: 400 });
+    // Get user to check their domain limit
+    const user = await (prisma as any).user.findUnique({
+      where: { id: decoded.userId },
+      select: { domainLimit: true, planType: true, subscriptionStatus: true },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Check if user has active subscription
+    if (user.subscriptionStatus !== 'active') {
+      return NextResponse.json({ 
+        error: 'Active subscription required to add domains' 
+      }, { status: 403 });
+    }
+
+    // Check domain limit based on user's plan
+    const userDomainCount = await (prisma as any).domain.count({
+      where: { userId: decoded.userId },
+    });
+
+    const domainLimit = user.domainLimit;
+    
+    // -1 means unlimited domains (scale plan)
+    if (domainLimit !== -1 && userDomainCount >= domainLimit) {
+      const planName = user.planType || 'current';
+      return NextResponse.json({ 
+        error: `Your ${planName} plan allows up to ${domainLimit} domain${domainLimit === 1 ? '' : 's'}. Please upgrade your plan or delete existing domains.`,
+        currentCount: userDomainCount,
+        limit: domainLimit
+      }, { status: 400 });
     }
 
     // Check if domain already exists
@@ -87,11 +114,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Domain already exists' }, { status: 400 });
     }
 
-    // Create domain
+    // Create domain with default redirect URL
     const newDomain = await (prisma as any).domain.create({
       data: {
         domain: domain.toLowerCase(),
-        redirectUrl,
+        redirectUrl: `https://${domain.toLowerCase()}`, // Default to same domain
         userId: decoded.userId,
       },
     });

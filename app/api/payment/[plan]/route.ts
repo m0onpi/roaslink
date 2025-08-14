@@ -15,38 +15,70 @@ export async function POST(
     const { amount, item, data, discountCode } = await req.json();
     const { plan } = await params;
 
-    if (plan === 'lifetime') {
-      // One-time payment intent
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: amount,
-        currency: 'gbp',
-        description: item,
-        metadata: { discountCode: discountCode || '' },
-      });
-      return NextResponse.json({ clientSecret: paymentIntent.client_secret });
-    } else {
-      // Weekly/Yearly: create customer + setup intent + provide priceId for subscription step
-      // Expect price IDs through env vars
-      const priceId = plan === 'week'
-        ? process.env.STRIPE_PRICE_WEEK
-        : process.env.STRIPE_PRICE_YEAR;
-      if (!priceId) return NextResponse.json({ error: 'Price not configured' }, { status: 500 });
-
-      const customer = await stripe.customers.create({
-        name: data?.name,
-        email: data?.email,
-      });
-
-      const setupIntent = await stripe.setupIntents.create({
-        customer: customer.id,
-        payment_method_types: ['card'],
-      });
-
-      return NextResponse.json({ clientSecret: setupIntent.client_secret, customerId: customer.id, priceId });
+    // Validate input
+    if (!amount || !item || !data?.email) {
+      return NextResponse.json(
+        { error: 'Missing required fields: amount, item, or email' },
+        { status: 400 }
+      );
     }
-  } catch (e) {
-    console.error('Init payment error', e);
-    return NextResponse.json({ error: 'Failed to init payment' }, { status: 500 });
+
+    if (typeof amount !== 'number' || amount <= 0) {
+      return NextResponse.json(
+        { error: 'Invalid amount. Must be a positive number.' },
+        { status: 400 }
+      );
+    }
+
+    // Check for existing customer
+    const existingCustomers = await stripe.customers.list({
+      email: data.email,
+      limit: 1,
+    });
+
+    let customer = existingCustomers.data[0];
+
+    // Create new customer if not exists
+    if (!customer) {
+      customer = await stripe.customers.create({
+        email: data.email,
+        name: data.name,
+        metadata: {
+          signup_date: new Date().toISOString(),
+        },
+      });
+    }
+
+    // Create a direct PaymentIntent for immediate payment (all plans are now monthly)
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(amount),
+      currency: 'gbp',
+      customer: customer.id,
+      metadata: {
+        plan: plan,
+        item: item,
+      },
+      automatic_payment_methods: {
+        enabled: true,
+      },
+    });
+
+    if (!paymentIntent.client_secret) {
+      return NextResponse.json({ error: 'Failed to create payment intent' }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      clientSecret: paymentIntent.client_secret,
+      customerId: customer.id,
+      paymentIntentId: paymentIntent.id,
+      plan: plan,
+    });
+  } catch (error) {
+    console.error('Stripe API Error:', error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Payment processing failed' },
+      { status: 500 }
+    );
   }
 }
 

@@ -9,7 +9,6 @@ import Link from 'next/link';
 interface Domain {
   id: string;
   domain: string;
-  redirectUrl: string;
   isActive: boolean;
   createdAt: string;
 }
@@ -21,6 +20,7 @@ interface User {
   subscriptionStatus: string;
   planType: string;
   subscriptionEndsAt: string;
+  domainLimit: number;
 }
 
 export default function DashboardPage() {
@@ -29,7 +29,6 @@ export default function DashboardPage() {
   const [hasAccess, setHasAccess] = useState(false);
   const [domains, setDomains] = useState<Domain[]>([]);
   const [newDomain, setNewDomain] = useState('');
-  const [newRedirectUrl, setNewRedirectUrl] = useState('');
   const [isAddingDomain, setIsAddingDomain] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -95,7 +94,17 @@ export default function DashboardPage() {
 
   const addDomain = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newDomain.trim() || !newRedirectUrl.trim()) return;
+    if (!newDomain.trim()) return;
+
+    // Check domain limit
+    // Check domain limit based on user's plan
+    const domainLimit = user?.domainLimit || 0;
+    
+    if (domainLimit !== -1 && domains.length >= domainLimit) {
+      const planName = user?.planType || 'current';
+      setError(`Your ${planName} plan allows up to ${domainLimit} domain${domainLimit === 1 ? '' : 's'}. Please upgrade your plan or delete existing domains.`);
+      return;
+    }
 
     setIsAddingDomain(true);
     setError('');
@@ -109,7 +118,6 @@ export default function DashboardPage() {
         credentials: 'include',
         body: JSON.stringify({
           domain: newDomain.trim(),
-          redirectUrl: newRedirectUrl.trim(),
         }),
       });
 
@@ -121,7 +129,6 @@ export default function DashboardPage() {
       
       setDomains([...domains, data.domain]);
       setNewDomain('');
-      setNewRedirectUrl('');
     } catch (err: any) {
       setError(err.message || 'Failed to add domain');
     } finally {
@@ -280,39 +287,34 @@ export default function DashboardPage() {
             transition={{ delay: 0.1 }}
             className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 mb-8"
           >
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Add New Domain</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900">Add New Domain</h2>
+              <span className="text-sm text-gray-500">
+                {domains.length}/{user?.domainLimit === -1 ? '∞' : user?.domainLimit || 0} domains used
+              </span>
+            </div>
             <form onSubmit={addDomain} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Domain</label>
-                  <input
-                    type="text"
-                    value={newDomain}
-                    onChange={(e) => setNewDomain(e.target.value)}
-                    placeholder="example.com"
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Redirect URL</label>
-                  <input
-                    type="url"
-                    value={newRedirectUrl}
-                    onChange={(e) => setNewRedirectUrl(e.target.value)}
-                    placeholder="https://your-target-site.com"
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    required
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Domain Name</label>
+                <input
+                  type="text"
+                  value={newDomain}
+                  onChange={(e) => setNewDomain(e.target.value)}
+                  placeholder="example.com"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Enter just the domain name (e.g., example.com, subdomain.example.com)
+                </p>
               </div>
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
-                disabled={isAddingDomain}
+                disabled={isAddingDomain || (user?.domainLimit !== -1 && domains.length >= (user?.domainLimit || 0))}
                 className={`w-full px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 ${
-                  isAddingDomain
+                  isAddingDomain || (user?.domainLimit !== -1 && domains.length >= (user?.domainLimit || 0))
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg'
                 }`}
@@ -321,6 +323,11 @@ export default function DashboardPage() {
                   <>
                     <FaSpinner className="w-5 h-5 animate-spin" />
                     Adding Domain...
+                  </>
+                ) : (user?.domainLimit !== -1 && domains.length >= (user?.domainLimit || 0)) ? (
+                  <>
+                    <FaLock className="w-4 h-4" />
+                    Domain Limit Reached
                   </>
                 ) : (
                   <>
@@ -369,7 +376,9 @@ export default function DashboardPage() {
                         </div>
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900">{domain.domain}</h3>
-                          <p className="text-sm text-gray-500">→ {domain.redirectUrl}</p>
+                          <p className="text-sm text-gray-500">
+                            Status: {domain.isActive ? 'Active' : 'Inactive'}
+                          </p>
                           <p className="text-xs text-gray-400">Added on {new Date(domain.createdAt).toLocaleDateString()}</p>
                         </div>
                       </div>

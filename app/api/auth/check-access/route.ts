@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export async function GET(req: Request) {
   try {
@@ -23,16 +26,37 @@ export async function GET(req: Request) {
     // Verify JWT
     const decoded = jwt.verify(token, jwtSecret) as any;
     
-    // Check access directly from JWT data (no database call needed)
-    const hasAccess = decoded.hasAccess || decoded.subscriptionStatus === 'active';
+    // Fetch user details including domain limit from database
+    const user = await (prisma as any).user.findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        subscriptionStatus: true,
+        planType: true,
+        subscriptionEndsAt: true,
+        domainLimit: true,
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json({ hasAccess: false, reason: 'User not found' }, { status: 404 });
+    }
+
+    // Check access based on subscription status
+    const hasAccess = user.subscriptionStatus === 'active';
 
     return NextResponse.json({
       hasAccess,
       user: {
-        id: decoded.userId,
-        email: decoded.email,
-        subscriptionStatus: decoded.subscriptionStatus,
-        planType: decoded.planType,
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        subscriptionStatus: user.subscriptionStatus,
+        planType: user.planType,
+        subscriptionEndsAt: user.subscriptionEndsAt,
+        domainLimit: user.domainLimit,
       },
       reason: hasAccess ? 'Access granted' : 'No active subscription',
     });

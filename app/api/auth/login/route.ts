@@ -20,6 +20,7 @@ export async function POST(req: Request) {
         subscriptionStatus: true,
         planType: true,
         subscriptionEndsAt: true,
+        domainLimit: true,
       },
     });
 

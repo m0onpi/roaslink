@@ -52,35 +52,35 @@ interface Package {
 
 const packages: Package[] = [
   { 
-    id: 'week',
+    id: 'starter',
     title: 'Starter',
     description: 'Perfect for small businesses and testing',
     originalPrice: 149.99,
     price: 0.99,
     color: 'blue',
     icon: <FaRocket className="w-6 h-6" />,
-    features: ['Unlimited redirects', 'All platforms supported', 'Email support', 'Basic analytics']
+    features: ['1 domain redirect', 'All platforms supported', 'Email support', 'Basic analytics']
   },
   {
-    id: 'month',
+    id: 'growth',
     title: 'Growth',
     description: 'Most popular for growing businesses',
-    originalPrice: 199.99,
-    price: 149.99,
+    originalPrice: 299.99,
+    price: 199.00,
     color: 'purple',
     icon: <FaCrown className="w-6 h-6" />,
-    features: ['Everything in Starter', 'Priority support', 'Advanced analytics', 'Custom domains'],
+    features: ['3 domain redirects', 'Priority support', 'Advanced analytics', 'Custom domains'],
     popular: true
   },
   {
-    id: 'year',
+    id: 'scale',
     title: 'Scale',
     description: 'Best value for enterprise needs',
     originalPrice: 499.99,
-    price: 349.99,
+    price: 349.00,
     color: 'green',
     icon: <FaGem className="w-6 h-6" />,
-    features: ['Everything in Growth', 'SLA + onboarding', 'White-label solution', 'Dedicated support', 'API access']
+    features: ['Unlimited domains', 'SLA + onboarding', 'White-label solution', 'Dedicated support', 'API access']
   },
 ];
 
@@ -436,7 +436,7 @@ function CheckoutContent() {
                   <span className="text-3xl font-bold text-gray-900">£{pkg.price.toFixed(2)}</span>
                   <span className="text-sm text-gray-500 line-through">£{pkg.originalPrice.toFixed(2)}</span>
                 </div>
-                <p className="text-sm text-gray-500">per {pkg.id}</p>
+                <p className="text-sm text-gray-500">per month</p>
               </div>
 
               <div className="space-y-2 mb-6">
@@ -499,7 +499,7 @@ function CheckoutContent() {
                     <h4 className="font-semibold text-gray-900">Secure Payment</h4>
                   </div>
                   <p className="text-sm text-gray-700">
-                    By continuing, you agree to our Terms of Service and authorize an immediate charge of £{selectedPackageDetails?.price.toFixed(2)} for your {selectedPackageDetails?.id}ly subscription. No trial period - your subscription starts immediately.
+                    By continuing, you agree to our Terms of Service and authorize an immediate charge of £{selectedPackageDetails?.price.toFixed(2)} for your monthly subscription. No trial period - your subscription starts immediately.
                   </p>
                 </div>
               </div>
