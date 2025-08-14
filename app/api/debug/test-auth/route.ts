@@ -34,20 +34,31 @@ export async function GET(req: Request) {
       });
     }
 
-    const decoded = jwt.verify(token, jwtSecret) as any;
-    console.log('🔓 Decoded JWT:', decoded);
+    try {
+      const decoded = jwt.verify(token, jwtSecret) as any;
+      console.log('🔓 Decoded JWT:', decoded);
 
-    const hasAccess = decoded.hasAccess || decoded.subscriptionStatus === 'active';
-    console.log('✅ Access check:', hasAccess);
+      const hasAccess = decoded.hasAccess || decoded.subscriptionStatus === 'active';
+      console.log('✅ Access check:', hasAccess);
 
-    return NextResponse.json({
-      success: true,
-      decoded,
-      hasAccess,
-      subscriptionStatus: decoded.subscriptionStatus,
-      planType: decoded.planType,
-      debug: 'Authentication working correctly'
-    });
+      return NextResponse.json({
+        success: true,
+        decoded,
+        hasAccess,
+        subscriptionStatus: decoded.subscriptionStatus,
+        planType: decoded.planType,
+        debug: 'Authentication working correctly'
+      });
+    } catch (jwtError: any) {
+      console.log('🚫 JWT verification failed:', jwtError.message);
+      return NextResponse.json({
+        error: 'JWT verification failed',
+        jwtError: jwtError.message,
+        tokenLength: token.length,
+        tokenStart: token.substring(0, 20) + '...',
+        debug: 'Token is present but invalid - possibly expired or corrupted'
+      });
+    }
   } catch (error: any) {
     console.error('❌ Auth test error:', error);
     return NextResponse.json({
