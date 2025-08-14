@@ -30,7 +30,7 @@ export async function DELETE(
     const { id } = await params;
 
     // Check if domain exists and belongs to user
-    const domain = await prisma.domain.findFirst({
+    const domain = await (prisma as any).domain.findFirst({
       where: {
         id,
         userId: decoded.userId,
@@ -42,7 +42,7 @@ export async function DELETE(
     }
 
     // Delete domain
-    await prisma.domain.delete({
+    await (prisma as any).domain.delete({
       where: { id },
     });
 
@@ -80,7 +80,7 @@ export async function PUT(
     const { redirectUrl, isActive } = await req.json();
 
     // Check if domain exists and belongs to user
-    const domain = await prisma.domain.findFirst({
+    const domain = await (prisma as any).domain.findFirst({
       where: {
         id,
         userId: decoded.userId,
@@ -101,7 +101,7 @@ export async function PUT(
     }
 
     // Update domain
-    const updatedDomain = await prisma.domain.update({
+    const updatedDomain = await (prisma as any).domain.update({
       where: { id },
       data: {
         ...(redirectUrl && { redirectUrl }),

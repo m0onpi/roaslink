@@ -10,37 +10,17 @@ const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {
-    const { customerId, paymentMethodId, plan, amount } = await req.json();
+    const { subscriptionId, customerId, plan, paymentIntentId } = await req.json();
     
-    if (!customerId || !paymentMethodId || !plan || !amount) {
+    if (!subscriptionId || !customerId || !plan || !paymentIntentId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Attach payment method to customer
-    await stripe.paymentMethods.attach(paymentMethodId, { customer: customerId });
-    await stripe.customers.update(customerId, { 
-      invoice_settings: { default_payment_method: paymentMethodId } 
-    });
-
-    // Create price dynamically based on plan and amount
-    const interval = plan === 'week' ? 'week' : plan === 'month' ? 'month' : 'year';
-    
-    const price = await stripe.prices.create({
-      currency: 'gbp',
-      unit_amount: Math.round(amount),
-      recurring: { interval },
-      product_data: { name: `RoasLink ${plan} Plan` },
-    });
-
-    // Create subscription
-    const subscription = await stripe.subscriptions.create({
-      customer: customerId,
-      items: [{ price: price.id }],
-      payment_behavior: 'default_incomplete',
-      payment_settings: { save_default_payment_method: 'on_subscription' },
-      expand: ['latest_invoice.payment_intent'],
-      metadata: { plan },
-    });
+    // Verify the payment was successful
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    if (paymentIntent.status !== 'succeeded') {
+      return NextResponse.json({ error: 'Payment not confirmed' }, { status: 400 });
+    }
 
     // Get customer email from Stripe
     const customer = await stripe.customers.retrieve(customerId);
@@ -63,7 +43,7 @@ export async function POST(req: Request) {
         update: {
           subscriptionStatus: 'active',
           stripeCustomerId: customerId,
-          subscriptionId: subscription.id,
+          subscriptionId: subscriptionId,
           planType: plan,
           subscriptionEndsAt,
         },
@@ -71,7 +51,7 @@ export async function POST(req: Request) {
           email: customerEmail,
           subscriptionStatus: 'active',
           stripeCustomerId: customerId,
-          subscriptionId: subscription.id,
+          subscriptionId: subscriptionId,
           planType: plan,
           subscriptionEndsAt,
         },
@@ -79,16 +59,14 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({
-      subscriptionId: subscription.id,
-      clientSecret: (subscription.latest_invoice as any)?.payment_intent?.client_secret,
+      message: 'Subscription confirmed successfully',
+      subscriptionId,
     });
   } catch (error) {
-    console.error('Create subscription error:', error);
+    console.error('Confirm subscription error:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to create subscription' },
+      { error: error instanceof Error ? error.message : 'Failed to confirm subscription' },
       { status: 500 }
     );
   }
 }
-
-

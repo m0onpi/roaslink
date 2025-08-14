@@ -25,9 +25,10 @@ export async function GET(req: Request) {
 
     // Verify JWT
     const decoded = jwt.verify(token, jwtSecret) as any;
+    console.log('Decoded JWT:', { userId: decoded.userId, email: decoded.email });
     
     // Get user from database with subscription info
-    const user = await prisma.user.findUnique({
+    const user = await (prisma as any).user.findUnique({
       where: { id: decoded.userId },
       select: {
         id: true,
@@ -38,6 +39,8 @@ export async function GET(req: Request) {
         subscriptionEndsAt: true,
       },
     });
+    
+    console.log('Found user:', user);
 
     if (!user) {
       return NextResponse.json({ hasAccess: false, reason: 'User not found' }, { status: 401 });

@@ -26,7 +26,7 @@ export async function GET(req: Request) {
     const decoded = jwt.verify(token, jwtSecret) as any;
     
     // Get user's domains
-    const domains = await prisma.domain.findMany({
+    const domains = await (prisma as any).domain.findMany({
       where: { userId: decoded.userId },
       orderBy: { createdAt: 'desc' },
     });
@@ -79,7 +79,7 @@ export async function POST(req: Request) {
     }
 
     // Check if domain already exists
-    const existingDomain = await prisma.domain.findUnique({
+    const existingDomain = await (prisma as any).domain.findUnique({
       where: { domain: domain.toLowerCase() },
     });
 
@@ -88,7 +88,7 @@ export async function POST(req: Request) {
     }
 
     // Create domain
-    const newDomain = await prisma.domain.create({
+    const newDomain = await (prisma as any).domain.create({
       data: {
         domain: domain.toLowerCase(),
         redirectUrl,

@@ -96,6 +96,8 @@ function CardSetupForm({ onSuccess, onError, formData, selectedPackageDetails, a
     setLoading(true);
     try {
       const finalAmount = appliedDiscount ? appliedDiscount.finalAmount : Math.round(selectedPackageDetails.price * 100);
+      
+      // Create subscription with immediate payment intent
       const res = await fetch(`/api/payment/${selectedPackageDetails.id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -106,40 +108,45 @@ function CardSetupForm({ onSuccess, onError, formData, selectedPackageDetails, a
           discountCode: appliedDiscount?.code,
         }),
       });
+      
       if (!res.ok) throw new Error('Failed to initialize payment');
-      const { clientSecret, customerId } = await res.json();
+      const { clientSecret, customerId, subscriptionId } = await res.json();
 
       if (!stripe || !elements) throw new Error('Stripe not loaded');
       const cardElement = elements.getElement(CardElement);
       if (!cardElement) throw new Error('Card element not found');
 
-      // Confirm setup intent for subscription
-      const { setupIntent, error: stripeError } = await stripe.confirmCardSetup(clientSecret, {
+      // Confirm payment intent for immediate subscription payment
+      const { paymentIntent, error: stripeError } = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card: cardElement,
           billing_details: { name: formData.name, email: formData.email },
         },
       });
+      
       if (stripeError) throw new Error(stripeError.message);
-      if (!setupIntent || !setupIntent.payment_method) throw new Error('No payment method returned');
+      if (!paymentIntent || paymentIntent.status !== 'succeeded') {
+        throw new Error('Payment failed - please try again');
+      }
 
-      // Create subscription
-      const subRes = await fetch('/api/payment/create-subscription', {
+      // Update user subscription status in database
+      const updateRes = await fetch('/api/payment/confirm-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          subscriptionId,
           customerId,
-          paymentMethodId: setupIntent.payment_method,
           plan: selectedPackageDetails.id,
-          amount: finalAmount,
-          discountCode: appliedDiscount?.code || null,
+          paymentIntentId: paymentIntent.id,
         }),
         credentials: 'include',
       });
-      if (!subRes.ok) {
-        const err = await subRes.json();
-        throw new Error(err.error || 'Failed to create subscription');
+      
+      if (!updateRes.ok) {
+        const err = await updateRes.json();
+        throw new Error(err.error || 'Failed to confirm subscription');
       }
+      
       onSuccess();
     } catch (err: any) {
       setError(err.message || 'Payment failed');
@@ -188,7 +195,7 @@ function CardSetupForm({ onSuccess, onError, formData, selectedPackageDetails, a
         ) : (
           <>
             <FaLock className="w-4 h-4" />
-            Start Subscription
+            Pay Now & Start Subscription
             <FaArrowRight className="w-4 h-4" />
           </>
         )}
@@ -484,7 +491,7 @@ function CheckoutContent() {
                     <h4 className="font-semibold text-gray-900">Secure Payment</h4>
                   </div>
                   <p className="text-sm text-gray-700">
-                    By continuing, you agree to our Terms of Service and authorize a charge of £{selectedPackageDetails?.price.toFixed(2)}/${selectedPackageDetails?.id} for your subscription.
+                    By continuing, you agree to our Terms of Service and authorize an immediate charge of £{selectedPackageDetails?.price.toFixed(2)} for your {selectedPackageDetails?.id}ly subscription. No trial period - your subscription starts immediately.
                   </p>
                 </div>
               </div>

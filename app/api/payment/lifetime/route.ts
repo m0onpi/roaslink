@@ -22,7 +22,7 @@ export async function POST(req: Request) {
 
     if (customerEmail) {
       // Update user with lifetime access
-      await prisma.user.upsert({
+      await (prisma as any).user.upsert({
         where: { email: customerEmail },
         update: {
           subscriptionStatus: 'active',

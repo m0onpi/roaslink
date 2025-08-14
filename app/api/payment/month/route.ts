@@ -57,16 +57,28 @@ export async function POST(req: Request) {
       );
     }
 
-    // Create a SetupIntent
-    const setupIntent = await stripe.setupIntents.create({
+    // Create price for subscription
+    const price = await stripe.prices.create({
+      currency: 'gbp',
+      unit_amount: Math.round(amount),
+      recurring: { interval: 'month' },
+      product_data: { name: item },
+    });
+
+    // Create subscription with immediate payment (no trial)
+    const subscription = await stripe.subscriptions.create({
       customer: customer.id,
-      payment_method_types: ['card'],
-      usage: 'off_session',
+      items: [{ price: price.id }],
+      payment_behavior: 'default_incomplete',
+      payment_settings: { save_default_payment_method: 'on_subscription' },
+      expand: ['latest_invoice.payment_intent'],
+      metadata: { plan: 'month' },
     });
 
     return NextResponse.json({
-      clientSecret: setupIntent.client_secret,
+      clientSecret: (subscription.latest_invoice as any)?.payment_intent?.client_secret,
       customerId: customer.id,
+      subscriptionId: subscription.id,
     });
   } catch (error) {
     console.error('Stripe API Error:', error);
