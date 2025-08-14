@@ -53,34 +53,34 @@ interface Package {
 const packages: Package[] = [
   { 
     id: 'week',
-    title: 'Weekly Plan',
-    description: 'Perfect for testing and small projects',
-    originalPrice: 9.99,
-    price: 4.99,
+    title: 'Starter',
+    description: 'Perfect for small businesses and testing',
+    originalPrice: 149.99,
+    price: 99.99,
     color: 'blue',
     icon: <FaRocket className="w-6 h-6" />,
-    features: ['Unlimited redirects', 'All platforms supported', 'Cancel anytime', 'Email support']
+    features: ['Unlimited redirects', 'All platforms supported', 'Email support', 'Basic analytics']
   },
   {
     id: 'month',
-    title: 'Monthly Plan',
+    title: 'Growth',
     description: 'Most popular for growing businesses',
-    originalPrice: 29.99,
-    price: 19.99,
+    originalPrice: 199.99,
+    price: 149.99,
     color: 'purple',
     icon: <FaCrown className="w-6 h-6" />,
-    features: ['Unlimited redirects', 'All platforms supported', 'Priority support', 'Analytics dashboard'],
+    features: ['Everything in Starter', 'Priority support', 'Advanced analytics', 'Custom domains'],
     popular: true
   },
   {
     id: 'year',
-    title: 'Yearly Plan',
-    description: 'Best value - 2 months free!',
-    originalPrice: 239.88,
-    price: 199.99,
+    title: 'Scale',
+    description: 'Best value for enterprise needs',
+    originalPrice: 499.99,
+    price: 349.99,
     color: 'green',
     icon: <FaGem className="w-6 h-6" />,
-    features: ['Unlimited redirects', 'All platforms supported', 'Priority support', 'Advanced analytics', 'Custom domains']
+    features: ['Everything in Growth', 'SLA + onboarding', 'White-label solution', 'Dedicated support', 'API access']
   },
 ];
 
@@ -489,94 +489,19 @@ function CheckoutContent() {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-xl p-6 mb-6 border border-gray-700/50">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-purple-500/20 rounded-lg">
-                    <FaGift className="w-5 h-5 text-purple-400" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-100">Discount Code</h3>
-                </div>
-
-                {!appliedDiscount ? (
-                  <div className="space-y-4">
-                    <div className="flex gap-3">
-                      <input type="text" value={discountCode} onChange={(e) => setDiscountCode(e.target.value.toUpperCase())} placeholder="Enter discount code (e.g., TJ20)" className="flex-1 bg-[#1a1a1a] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-purple-500 focus:outline-none" />
-                      <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type="button" onClick={() => validateDiscountCode(discountCode)} disabled={discountLoading || !discountCode.trim()} className="px-6 py-3 bg-gradient-to-r from-purple-600/20 to-purple-500/20 text-purple-400 border border-purple-500/30 rounded-lg hover:from-purple-600/30 hover:to-purple-500/30 transition-all duration-300 font-semibold disabled:opacity-50">
-                        {discountLoading ? (
-                          <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }} className="w-5 h-5 border-2 border-purple-400 border-t-transparent rounded-full" />
-                        ) : (
-                          'Apply'
-                        )}
-                      </motion.button>
-                    </div>
-
-                    {discountError && (
-                      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-red-500/20 border border-red-500/30 rounded-lg p-3 text-red-400 text-sm">{discountError}</motion.div>
-                    )}
-                  </div>
-                ) : (
-                  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-green-500/20 border border-green-500/30 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <FaCheck className="w-4 h-4 text-green-400" />
-                          <span className="font-semibold text-green-400">Discount Applied!</span>
-                        </div>
-                        <p className="text-sm text-gray-300">{appliedDiscount.description || `${appliedDiscount.discountType === 'percentage' ? appliedDiscount.discountValue : '£' + (appliedDiscount.discountValue / 100).toFixed(2)} off`}</p>
-                        <p className="text-sm text-green-400">You saved £{(appliedDiscount.savings / 100).toFixed(2)}!</p>
-                      </div>
-                      <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={removeDiscountCode} className="text-gray-400 hover:text-red-400 transition-colors">✕</motion.button>
-                    </div>
-                  </motion.div>
-                )}
-              </div>
-
-              <div className="bg-[#1a1a1a] rounded-xl p-6 mb-6 border border-gray-700/50">
-                <h3 className="text-lg font-bold text-gray-100 mb-4">{selectedPackage === 'lifetime' ? 'Lifetime Plan Summary:' : 'Trial Summary:'}</h3>
+                            <div className="bg-gray-50 rounded-xl p-6 mb-6 border border-gray-200">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Subscription Summary</h3>
                 <div className="space-y-3">
-                  {selectedPackage === 'lifetime' ? (
-                    <>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-300">Lifetime Access:</span>
-                        <span className="text-xl font-bold text-gray-100">£{selectedPackageDetails?.price.toFixed(2)}</span>
-                      </div>
-                      {appliedDiscount && (
-                        <>
-                          <div className="flex justify-between items-center text-green-400">
-                            <span>Discount ({appliedDiscount.code}):</span>
-                            <span>-£{(appliedDiscount.savings / 100).toFixed(2)}</span>
-                          </div>
-                          <div className="border-t border-gray-700 pt-2">
-                            <div className="flex justify-between items-center">
-                              <span className="text-gray-300 font-semibold">Final Price:</span>
-                              <span className="text-2xl font-bold text-green-400">£{finalPrice.toFixed(2)}</span>
-                            </div>
-                          </div>
-                        </>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-300">7-Day Free Trial:</span>
-                        <span className="text-xl font-bold text-gray-100">£{selectedPackageDetails?.price.toFixed(2)}/{selectedPackageDetails?.id}</span>
-                      </div>
-                      {appliedDiscount && (
-                        <>
-                          <div className="flex justify-between items-center text-green-400">
-                            <span>Discount ({appliedDiscount.code}):</span>
-                            <span>-£{(appliedDiscount.savings / 100).toFixed(2)}</span>
-                          </div>
-                          <div className="border-t border-gray-700 pt-2">
-                            <div className="flex justify-between items-center">
-                              <span className="text-gray-300 font-semibold">Final Price:</span>
-                              <span className="text-2xl font-bold text-green-400">£{finalPrice.toFixed(2)}/{selectedPackageDetails?.id}</span>
-                            </div>
-                          </div>
-                        </>
-                      )}
-                    </>
-                  )}
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-700">{selectedPackageDetails?.title}:</span>
+                    <span className="text-xl font-bold text-gray-900">£{selectedPackageDetails?.price.toFixed(2)}/mo</span>
+                  </div>
+                  <div className="border-t border-gray-300 pt-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700 font-semibold">Total:</span>
+                      <span className="text-2xl font-bold text-blue-600">£{totalPrice.toFixed(2)}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
