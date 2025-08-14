@@ -21,12 +21,7 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!user.emailVerified) {
-      return NextResponse.json(
-        { error: 'Please verify your email before logging in' },
-        { status: 400 }
-      );
-    }
+
 
     // Check password
     const isValidPassword = await bcrypt.compare(password, user.password!);
@@ -38,6 +33,16 @@ export async function POST(req: Request) {
       );
     }
 
+    // Check for JWT secret
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      console.error('JWT_SECRET is not set in environment variables');
+      return NextResponse.json(
+        { error: 'Internal server error' },
+        { status: 500 }
+      );
+    }
+
     // Generate JWT
     const token = jwt.sign(
       { 
@@ -45,7 +50,7 @@ export async function POST(req: Request) {
         email: user.email,
         emailVerified: user.emailVerified
       },
-      process.env.JWT_SECRET!,
+      jwtSecret,
       { expiresIn: '1d' }
     );
 

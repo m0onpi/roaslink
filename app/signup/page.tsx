@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FaArrowLeft, FaRocket, FaEnvelope, FaCreditCard, FaCheckCircle } from 'react-icons/fa';
+import { FaArrowLeft, FaRocket, FaEnvelope, FaCreditCard, FaCheckCircle, FaLock, FaEye, FaEyeSlash, FaUser } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
@@ -10,10 +10,13 @@ function SignupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
-    email: ''
+    name: '',
+    email: '',
+    password: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [nextPath, setNextPath] = useState<string | null>(null);
 
   useEffect(() => {
@@ -27,14 +30,36 @@ function SignupContent() {
     setLoading(true);
 
     try {
-      if (!formData.email) {
-        throw new Error('Please enter your email address');
+      if (!formData.name || !formData.email || !formData.password) {
+        throw new Error('Please fill in all fields');
       }
 
-      // For now, just redirect to checkout
-      router.push('/checkout?plan=starter');
+      if (formData.password.length < 6) {
+        throw new Error('Password must be at least 6 characters');
+      }
+
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim().toLowerCase(),
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create account');
+      }
+
+      // Redirect to checkout after successful signup
+      router.push('/checkout?plan=month');
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to proceed');
+      setError(error instanceof Error ? error.message : 'Failed to create account');
     } finally {
       setLoading(false);
     }
@@ -61,10 +86,10 @@ function SignupContent() {
               <FaRocket className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-              Get Started with RoasLink
+              Create Your Account
             </h2>
             <p className="text-gray-600">
-              Enter your email and we'll set up your redirect solution
+              Get started with RoasLink redirect solution
             </p>
           </div>
           
@@ -75,6 +100,21 @@ function SignupContent() {
           )}
 
           <form onSubmit={handleSignup} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <FaUser className="inline mr-2 w-4 h-4" />
+                Full Name
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="John Doe"
+                required
+              />
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <FaEnvelope className="inline mr-2 w-4 h-4" />
@@ -88,6 +128,32 @@ function SignupContent() {
                 placeholder="your@email.com"
                 required
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <FaLock className="inline mr-2 w-4 h-4" />
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.password}
+                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors pr-12"
+                  placeholder="Create a secure password"
+                  required
+                  minLength={6}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  {showPassword ? <FaEyeSlash className="w-4 h-4" /> : <FaEye className="w-4 h-4" />}
+                </button>
+              </div>
+              <p className="text-sm text-gray-500 mt-1">Must be at least 6 characters</p>
             </div>
 
             <motion.button
@@ -114,8 +180,8 @@ function SignupContent() {
                 </>
               ) : (
                 <>
-                  <FaCreditCard className="w-5 h-5" />
-                  Continue to Payment
+                  <FaRocket className="w-5 h-5" />
+                  Create Account
                 </>
               )}
             </motion.button>

@@ -6,21 +6,7 @@ const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {
-    const { 
-      name, 
-      email, 
-      password, 
-      experience, 
-      tradingStyle, 
-      goals,
-      timeCommitment,
-      riskTolerance,
-      preferredMarkets,
-      tradingFrequency,
-      currentTools,
-      motivation,
-      challenges
-    } = await req.json();
+    const { name, email, password } = await req.json();
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
@@ -43,25 +29,19 @@ export async function POST(req: Request) {
         name,
         email: email.toLowerCase(),
         password: hashedPassword,
-        onboardingData: {
-          experience,
-          tradingStyle,
-          goals,
-          timeCommitment,
-          riskTolerance,
-          preferredMarkets,
-          tradingFrequency,
-          currentTools,
-          motivation,
-          challenges
-        }
+        emailVerified: new Date(), // Auto-verify for simplicity
       },
     });
 
     // Send verification email
 
     return NextResponse.json({
-      message: 'Registration successful. Please check your email to verify your account.',
+      message: 'Account created successfully!',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      },
     });
   } catch (error) {
     console.error('Registration error:', error);

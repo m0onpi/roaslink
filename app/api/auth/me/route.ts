@@ -1,34 +1,52 @@
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export async function GET(req: Request) {
   try {
-    const cookieHeader = req.headers.get('cookie') || '';
-    const tokenMatch = cookieHeader.match(/(?:^|;\s*)token=([^;]+)/);
-    const token = tokenMatch ? decodeURIComponent(tokenMatch[1]) : null;
-
-    if (!token) {
-      return NextResponse.json({ authenticated: false }, { status: 200 });
+    const cookieHeader = req.headers.get('cookie');
+    if (!cookieHeader) {
+      return NextResponse.json({ authenticated: false }, { status: 401 });
     }
 
+    // Extract token from cookies
+    const tokenMatch = cookieHeader.match(/token=([^;]+)/);
+    if (!tokenMatch) {
+      return NextResponse.json({ authenticated: false }, { status: 401 });
+    }
+
+    const token = tokenMatch[1];
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
-      console.error('JWT_SECRET is not set');
-      return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 });
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 
-    const payload = jwt.verify(token, jwtSecret) as {
-      userId: string;
-      email: string;
-      emailVerified?: boolean;
-      [key: string]: unknown;
-    };
+    // Verify JWT
+    const decoded = jwt.verify(token, jwtSecret) as any;
+    
+    // Get user from database
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        emailVerified: true,
+      },
+    });
 
-    return NextResponse.json({ authenticated: true, user: payload });
+    if (!user) {
+      return NextResponse.json({ authenticated: false }, { status: 401 });
+    }
+
+    return NextResponse.json({
+      authenticated: true,
+      user,
+    });
   } catch (error) {
-    // Invalid/expired token -> treat as not authenticated
-    return NextResponse.json({ authenticated: false }, { status: 200 });
+    console.error('Auth check error:', error);
+    return NextResponse.json({ authenticated: false }, { status: 401 });
   }
 }
-
-

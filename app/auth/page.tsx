@@ -73,7 +73,7 @@ function AuthForm() {
         <div className="bg-white rounded-2xl p-6 md:p-8 shadow-xl border border-gray-200">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <FaArrowLeft className="w-8 h-8 text-white transform rotate-180" />
+              <FaRocket className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
               Welcome Back
