@@ -240,7 +240,7 @@ function CardSetupForm({ onSuccess, onError, formData, selectedPackageDetails, a
   );
 }
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selectedPackage, setSelectedPackage] = useState<string>(packages[0].id);
@@ -654,6 +654,18 @@ export default function CheckoutPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-[#1a1a1a] via-[#2a2a2a] to-[#1a1a1a] text-white flex items-center justify-center">
+        <div className="text-gray-400">Loading...</div>
+      </div>
+    }>
+      <CheckoutContent />
+    </Suspense>
   );
 }
 

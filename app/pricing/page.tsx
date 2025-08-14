@@ -145,4 +145,16 @@ function PricingContent() {
   );
 }
 
+export default function PricingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-[#1a1a1a] text-gray-300">
+        Loading...
+      </div>
+    }>
+      <PricingContent />
+    </Suspense>
+  );
+}
+
 
