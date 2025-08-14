@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FaArrowLeft } from 'react-icons/fa';
+import { FaArrowLeft, FaRocket } from 'react-icons/fa';
 
 function AuthForm() {
   const router = useRouter();
