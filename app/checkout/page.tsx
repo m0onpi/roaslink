@@ -56,7 +56,7 @@ const packages: Package[] = [
     title: 'Starter',
     description: 'Perfect for small businesses and testing',
     originalPrice: 149.99,
-    price: 0.99,
+    price: 99.99,
     color: 'blue',
     icon: <FaRocket className="w-6 h-6" />,
     features: ['1 domain redirect', 'All platforms supported', 'Email support', 'Basic analytics']
@@ -66,7 +66,7 @@ const packages: Package[] = [
     title: 'Growth',
     description: 'Most popular for growing businesses',
     originalPrice: 299.99,
-    price: 199.00,
+    price: 149.00,
     color: 'purple',
     icon: <FaCrown className="w-6 h-6" />,
     features: ['3 domain redirects', 'Priority support', 'Advanced analytics', 'Custom domains'],
@@ -76,8 +76,8 @@ const packages: Package[] = [
     id: 'scale',
     title: 'Scale',
     description: 'Best value for enterprise needs',
-    originalPrice: 499.99,
-    price: 349.00,
+    originalPrice: 399.99,
+    price: 299.00,
     color: 'green',
     icon: <FaGem className="w-6 h-6" />,
     features: ['Unlimited domains', 'SLA + onboarding', 'White-label solution', 'Dedicated support', 'API access']
