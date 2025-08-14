@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     const { name, email, password } = await req.json();
 
     // Check if user exists
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await (prisma as any).user.findUnique({
       where: { email: email.toLowerCase() },
     });
 
@@ -24,12 +24,13 @@ export async function POST(req: Request) {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // Create user
-    const user = await prisma.user.create({
+    const user = await (prisma as any).user.create({
       data: {
         name,
         email: email.toLowerCase(),
         password: hashedPassword,
         emailVerified: new Date(), // Auto-verify for simplicity
+        subscriptionStatus: 'inactive', // Set initial status
       },
     });
 
