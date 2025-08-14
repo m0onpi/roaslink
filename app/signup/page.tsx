@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaArrowLeft, FaRocket, FaUser, FaEnvelope, FaLock, FaCheck, FaChartLine, FaBullseye, FaClock, FaDollarSign, FaGraduationCap, FaBriefcase, FaHeart, FaStar, FaTrophy, FaShieldAlt, FaLightbulb, FaUsers, FaGlobe, FaCalendarAlt, FaChartBar, FaCog, FaEye, FaEyeSlash, FaBook, FaBell } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,7 +18,7 @@ interface QuestionnaireData {
   challenges: string[];
 }
 
-export default function SignupPage() {
+function SignupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [step, setStep] = useState<'questionnaire' | 'signup' | 'verify'>('questionnaire');
@@ -628,5 +628,17 @@ export default function SignupPage() {
         </AnimatePresence>
       </div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-[#1a1a1a] via-[#2a2a2a] to-[#1a1a1a] text-white flex items-center justify-center">
+        <div className="text-gray-400">Loading...</div>
+      </div>
+    }>
+      <SignupContent />
+    </Suspense>
   );
 }

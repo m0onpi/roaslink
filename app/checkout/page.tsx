@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, JSX } from 'react';
+import { useState, useEffect, useCallback, useRef, JSX, Suspense } from 'react';
 import { FaCrown, FaRocket, FaCheck, FaShieldAlt, FaCreditCard, FaLock, FaArrowRight, FaGift, FaInfinity } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { CardElement, Elements, useStripe, useElements } from '@stripe/react-stripe-js';
