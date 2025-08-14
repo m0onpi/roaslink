@@ -305,7 +305,7 @@ export default function Home() {
                   <FaRocket className="w-5 h-5" />
                   Start Free Trial
                 </Link>
-                <Link href="/pricing" className="px-8 py-4 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-white transition-colors">
+                <Link href="/checkout" className="px-8 py-4 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-white transition-colors">
                   View Pricing
                 </Link>
               </div>
