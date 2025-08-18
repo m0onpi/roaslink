@@ -43,6 +43,44 @@ model Domain {
   updatedAt DateTime @updatedAt
   
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions  TrackingSession[]
 
   @@map("domains")
+}
+
+model TrackingSession {
+  id          String   @id @default(cuid())
+  sessionId   String   @unique
+  domainId    String
+  domain      String
+  userAgent   String?
+  referrer    String?
+  startTime   DateTime @default(now())
+  endTime     DateTime?
+  lastActivity DateTime @default(now())
+  exitPage    String?
+  pageCount   Int      @default(1)
+  duration    Int?     // in seconds
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  domainOwner Domain         @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  events      TrackingEvent[]
+
+  @@map("tracking_sessions")
+}
+
+model TrackingEvent {
+  id          String   @id @default(cuid())
+  sessionId   String
+  eventType   String   // 'page_view', 'click', 'scroll', 'exit', 'form_submit', etc.
+  page        String
+  element     String?  // CSS selector or element description
+  data        Json?    // Additional event data
+  timestamp   DateTime @default(now())
+  
+  session     TrackingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("tracking_events")
 } 
