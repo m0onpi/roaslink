@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
   'use strict';
   
   const domain = '${cleanDomain}';
-  const apiBase = '${process.env.NEXTAUTH_URL || 'https://smartdirect.vercel.app'}';
+  const apiBase = '${process.env.NEXTAUTH_URL || 'https://roaslink.co.uk'}';
   const debugMode = ${debug};
   
   // Generate unique session ID
