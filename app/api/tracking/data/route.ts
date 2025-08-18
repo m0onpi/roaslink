@@ -20,7 +20,15 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!sessionId || !domain || !eventType || !page) {
-      return new NextResponse('Missing required fields', { status: 400 });
+      return new NextResponse('Missing required fields', { 
+        status: 400,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+          'Access-Control-Allow-Credentials': 'true',
+        },
+      });
     }
 
     // Get domain record
@@ -30,11 +38,27 @@ export async function POST(request: NextRequest) {
     });
 
     if (!domainRecord) {
-      return new NextResponse('Domain not found', { status: 404 });
+      return new NextResponse('Domain not found', { 
+        status: 404,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+          'Access-Control-Allow-Credentials': 'true',
+        },
+      });
     }
 
     if (!domainRecord.isActive) {
-      return new NextResponse('Domain is not active', { status: 403 });
+      return new NextResponse('Domain is not active', { 
+        status: 403,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+          'Access-Control-Allow-Credentials': 'true',
+        },
+      });
     }
 
     // Get or create tracking session
@@ -97,11 +121,27 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return new NextResponse('OK', { status: 200 });
+    return new NextResponse('OK', { 
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Credentials': 'true',
+      },
+    });
 
   } catch (error) {
     console.error('Tracking data error:', error);
-    return new NextResponse('Internal server error', { status: 500 });
+    return new NextResponse('Internal server error', { 
+      status: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+        'Access-Control-Allow-Credentials': 'true',
+      },
+    });
   }
 }
 
@@ -112,7 +152,9 @@ export async function OPTIONS(request: NextRequest) {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Max-Age': '86400', // 24 hours
     },
   });
 }
