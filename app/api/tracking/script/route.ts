@@ -42,7 +42,6 @@ export async function GET(request: NextRequest) {
   'use strict';
   
   const domain = '${cleanDomain}';
-  const apiBase = '${process.env.NEXTAUTH_URL || 'https://roaslink.co.uk'}';
   const debugMode = ${debug};
   
   // Generate unique session ID
@@ -66,7 +65,7 @@ export async function GET(request: NextRequest) {
   
   debugLog('Tracking script loaded', { domain, sessionId });
   
-  // Track data to server
+  // Track data to server - use RoasLink API
   function trackEvent(eventType, data = {}) {
     const payload = {
       sessionId: sessionId,
@@ -81,8 +80,8 @@ export async function GET(request: NextRequest) {
     
     debugLog('Tracking event', payload);
     
-    // Send to tracking endpoint
-    fetch(apiBase + '/api/tracking/data', {
+    // Send to RoasLink tracking endpoint
+    fetch('https://roaslink.co.uk/api/tracking/data', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
