@@ -238,7 +238,7 @@ export async function GET(request: NextRequest) {
   
   debugLog('Tracking initialized successfully');
   
-})();`);
+})();`;
 
   return new NextResponse(script, {
     headers: {
