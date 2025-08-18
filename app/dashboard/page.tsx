@@ -233,6 +233,8 @@ export default function DashboardPage() {
               <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">RoasLink</h1>
             </div>
             <div className="flex items-center gap-4">
+              <Link href="/tracking" className="text-gray-600 hover:text-gray-900 transition-colors">Tracking Script</Link>
+              <Link href="/analytics" className="text-gray-600 hover:text-gray-900 transition-colors">Analytics</Link>
               {user && (
                 <div className="text-sm text-gray-600">
                   Welcome, <span className="font-semibold">{user.name}</span>

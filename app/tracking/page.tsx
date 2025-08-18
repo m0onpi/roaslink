@@ -83,15 +83,36 @@ export default function TrackingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Website Tracking Script</h1>
-          <p className="text-lg text-gray-600">
-            Monitor user behavior, track where visitors get stuck, and understand how users navigate your website.
-          </p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Navigation */}
+      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm">
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">RoasLink</h1>
+            </div>
+            <div className="flex items-center gap-4">
+              <button onClick={() => router.push('/dashboard')} className="text-gray-600 hover:text-gray-900 transition-colors">Dashboard</button>
+              <button onClick={() => router.push('/analytics')} className="text-gray-600 hover:text-gray-900 transition-colors">Analytics</button>
+            </div>
+          </div>
         </div>
+      </header>
+
+      <div className="py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">Website Tracking Script</h1>
+            <p className="text-lg text-gray-600">
+              Monitor user behavior, track where visitors get stuck, and understand how users navigate your website.
+            </p>
+          </div>
 
         {/* Main Content */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -220,6 +241,7 @@ export default function TrackingPage() {
             No personally identifiable information is collected. Make sure to comply with your local 
             privacy laws and update your privacy policy accordingly.
           </p>
+          </div>
         </div>
       </div>
     </div>
