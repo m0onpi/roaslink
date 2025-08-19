@@ -3,6 +3,73 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+// Cache for validated domains to improve performance
+const domainValidationCache = new Map<string, { isValid: boolean; timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+// Helper function to extract domain from origin URL
+function extractDomainFromOrigin(origin: string): string {
+  try {
+    const url = new URL(origin);
+    return url.hostname.replace(/^www\./, ''); // Remove www. prefix
+  } catch {
+    return '';
+  }
+}
+
+// Check if domain is confirmed and paid for
+async function isDomainValidForCors(origin: string): Promise<boolean> {
+  if (!origin) return false;
+  
+  const domain = extractDomainFromOrigin(origin);
+  if (!domain) return false;
+  
+  // Check cache first
+  const cached = domainValidationCache.get(domain);
+  if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
+    return cached.isValid;
+  }
+  
+  try {
+    // Check database for domain with active user subscription
+    const domainRecord = await prisma.domain.findFirst({
+      where: {
+        OR: [
+          { domain: domain },
+          { domain: `www.${domain}` } // Also check www variant
+        ],
+        isActive: true,
+      },
+      include: {
+        user: {
+          select: {
+            subscriptionStatus: true,
+            subscriptionEndsAt: true,
+          }
+        }
+      }
+    });
+    
+    const isValid = !!(
+      domainRecord &&
+      domainRecord.user.subscriptionStatus === 'active' &&
+      domainRecord.user.subscriptionEndsAt &&
+      new Date(domainRecord.user.subscriptionEndsAt) > new Date()
+    );
+    
+    // Cache the result
+    domainValidationCache.set(domain, {
+      isValid,
+      timestamp: Date.now()
+    });
+    
+    return isValid;
+  } catch (error) {
+    console.error('Error validating domain for CORS:', error);
+    return false;
+  }
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const domain = searchParams.get('domain');
@@ -239,13 +306,27 @@ export async function GET(request: NextRequest) {
   
 })();`;
 
-  return new NextResponse(script, {
-    headers: {
+  // Helper function to get CORS headers for script route
+  async function getScriptCorsHeaders(origin?: string | null) {
+    let allowOrigin = '*'; // Default fallback
+    
+    if (origin) {
+      const isValidDomain = await isDomainValidForCors(origin);
+      if (isValidDomain) {
+        allowOrigin = origin; // Allow the specific origin if domain is valid
+      }
+    }
+    
+    return {
       'Content-Type': 'application/javascript',
       'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': allowOrigin,
       'Access-Control-Allow-Methods': 'GET',
       'Access-Control-Allow-Headers': 'Content-Type',
-    },
+    };
+  }
+
+  return new NextResponse(script, {
+    headers: await getScriptCorsHeaders(request.headers.get('origin')),
   });
 }
