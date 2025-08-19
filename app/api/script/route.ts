@@ -46,28 +46,105 @@ export async function GET(request: NextRequest) {
   
   debugLog('Tracking script loaded', { domain, sessionId, trackingMethod: 'pixel' });
   
-  // Track data using pixel tracking (no CORS issues)
-  function trackEvent(eventType, data = {}) {
+  // Smart event filtering to prevent DB bloat
+  let eventQueue = [];
+  let lastEventTime = {};
+  const EVENT_COOLDOWN = {
+    'interaction': 1000,      // 1 second between interactions
+    'scroll_milestone': 5000, // 5 seconds between scroll events
+    'potential_exit': 30000,  // 30 seconds between potential exits
+    'page_view': 0,           // Always track page views
+    'page_exit': 0,           // Always track exits
+    'conversion': 0,          // Always track conversions
+    'form_submit': 2000,      // 2 seconds between form submissions
+  };
+  
+  function shouldTrackEvent(eventType) {
+    const now = Date.now();
+    const lastTime = lastEventTime[eventType] || 0;
+    const cooldown = EVENT_COOLDOWN[eventType] || 1000;
+    
+    if (now - lastTime < cooldown) {
+      debugLog('Event filtered (cooldown):', { eventType, timeSince: now - lastTime });
+      return false;
+    }
+    
+    lastEventTime[eventType] = now;
+    return true;
+  }
+  
+  // Smart event batching for better performance
+  function batchTrackEvent(eventType, data = {}) {
+    if (!shouldTrackEvent(eventType)) return;
+    
+    const event = {
+      eventType,
+      data,
+      timestamp: new Date().toISOString(),
+      page: window.location.pathname + window.location.search,
+    };
+    
+    // Immediate tracking for critical events
+    const criticalEvents = ['page_view', 'page_exit', 'conversion', 'form_submit'];
+    if (criticalEvents.includes(eventType)) {
+      trackEventNow(event);
+      return;
+    }
+    
+    // Batch non-critical events
+    eventQueue.push(event);
+    
+    // Process queue every 3 seconds or when it gets full
+    if (eventQueue.length >= 5) {
+      processEventQueue();
+    } else {
+      clearTimeout(window.smartDirectBatchTimer);
+      window.smartDirectBatchTimer = setTimeout(processEventQueue, 3000);
+    }
+  }
+  
+  function processEventQueue() {
+    if (eventQueue.length === 0) return;
+    
+    // Send the most important event from the queue
+    const priorityOrder = ['potential_exit', 'interaction', 'scroll_milestone'];
+    let eventToSend = null;
+    
+    for (const priority of priorityOrder) {
+      eventToSend = eventQueue.find(e => e.eventType === priority);
+      if (eventToSend) break;
+    }
+    
+    if (!eventToSend) {
+      eventToSend = eventQueue[0]; // Fallback to first event
+    }
+    
+    trackEventNow(eventToSend);
+    eventQueue = []; // Clear queue after sending
+  }
+  
+  // Core tracking function
+  function trackEventNow(event) {
     const params = new URLSearchParams({
       sessionId: sessionId,
       domain: domain,
-      eventType: eventType,
-      page: window.location.pathname + window.location.search,
-      timestamp: new Date().toISOString(),
+      eventType: event.eventType,
+      page: event.page,
+      timestamp: event.timestamp,
       userAgent: navigator.userAgent,
       referrer: document.referrer,
       title: document.title,
       url: window.location.href,
       // Add event-specific data
       ...Object.fromEntries(
-        Object.entries(data).map(([key, value]) => [
+        Object.entries(event.data).map(([key, value]) => [
           \`data_\${key}\`, 
           typeof value === 'object' ? JSON.stringify(value) : String(value)
         ])
       )
     });
     
-    debugLog('Tracking event', { eventType, domain, data });
+    debugLog('Tracking event', { eventType: event.eventType, domain, data: event.data });
     
     // Use pixel tracking - no CORS issues!
     const trackingUrl = \`https://roaslink.co.uk/api/tracking/pixel?\${params.toString()}\`;
@@ -84,6 +161,11 @@ export async function GET(request: NextRequest) {
     
     // This triggers the GET request - no CORS restrictions!
     pixel.src = trackingUrl;
+  }
+  
+  // Public function for tracking events
+  function trackEvent(eventType, data = {}) {
+    batchTrackEvent(eventType, data);
   }
   
   // Track page view
