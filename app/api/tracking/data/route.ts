@@ -91,6 +91,10 @@ async function getCorsHeaders(origin?: string | null) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Log for debugging CORS issues
+    const origin = request.headers.get('origin');
+    console.log('POST request received from origin:', origin);
+    
     const data = await request.json();
     
     const {
@@ -208,9 +212,15 @@ export async function POST(request: NextRequest) {
 
 // Handle preflight requests for CORS
 export async function OPTIONS(request: NextRequest) {
+  const origin = request.headers.get('origin');
+  console.log('OPTIONS request received from origin:', origin);
+  
+  const corsHeaders = await getCorsHeaders(origin);
+  console.log('Returning CORS headers:', corsHeaders);
+  
   return new NextResponse(null, {
     status: 200,
-    headers: await getCorsHeaders(request.headers.get('origin')),
+    headers: corsHeaders,
   });
 }
 
