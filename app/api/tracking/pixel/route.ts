@@ -127,7 +127,7 @@ export async function GET(request: NextRequest) {
     // Create tracking event
     await prisma.trackingEvent.create({
       data: {
-        sessionId: session.sessionId,
+        sessionId: session.id, // Use session.id, not session.sessionId (foreign key reference)
         eventType,
         page,
         element: eventData.element || null,
@@ -136,7 +136,12 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    console.log('Tracking event saved successfully:', { sessionId, eventType });
+    console.log('Tracking event saved successfully:', { 
+      sessionId, 
+      eventType, 
+      sessionDbId: session.id,
+      eventDataKeys: Object.keys(eventData)
+    });
 
     // Return 1x1 transparent pixel GIF
     return new NextResponse(PIXEL_GIF, {

@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
     // Create tracking event
     await prisma.trackingEvent.create({
       data: {
-        sessionId: session.sessionId,
+        sessionId: session.id, // Use session.id, not session.sessionId (foreign key reference)
         eventType,
         page,
         element: eventData.element || null,
