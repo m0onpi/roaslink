@@ -102,19 +102,43 @@ export async function GET(request: NextRequest) {
     });
   }
   
-  // Track clicks
+  // Track meaningful clicks only (for heatmap and user flow)
   function trackClick(event) {
     const element = event.target;
-    const selector = getElementSelector(element);
+    const elementType = element.tagName.toLowerCase();
     
-    trackEvent('click', {
+    // Only track meaningful interactions for heatmap
+    const meaningfulElements = ['a', 'button', 'input', 'select', 'textarea'];
+    const hasClickHandler = element.onclick || element.addEventListener;
+    const isInteractive = meaningfulElements.includes(elementType) || 
+                         element.getAttribute('role') === 'button' ||
+                         element.closest('[onclick]') ||
+                         hasClickHandler;
+    
+    if (!isInteractive) return; // Skip tracking non-interactive clicks
+    
+    const selector = getElementSelector(element);
+    const rect = element.getBoundingClientRect();
+    
+    trackEvent('interaction', {
       element: selector,
-      elementType: element.tagName.toLowerCase(),
-      elementText: element.textContent?.trim().substring(0, 100),
+      elementType: elementType,
+      elementText: element.textContent?.trim().substring(0, 50),
       elementId: element.id,
       elementClass: element.className,
-      x: event.clientX,
-      y: event.clientY
+      // Viewport coordinates (better for heatmaps)
+      viewportX: Math.round(rect.left + rect.width / 2),
+      viewportY: Math.round(rect.top + rect.height / 2),
+      // Click coordinates relative to element
+      clickX: event.clientX - rect.left,
+      clickY: event.clientY - rect.top,
+      // Element dimensions
+      elementWidth: rect.width,
+      elementHeight: rect.height,
+      // Page context
+      scrollY: window.scrollY,
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight
     });
   }
   
@@ -137,25 +161,55 @@ export async function GET(request: NextRequest) {
     });
   }
   
-  // Track scroll depth
+  // Track scroll depth and engagement
   let maxScrollDepth = 0;
+  let scrollMilestones = {};
+  
   function trackScroll() {
     const scrollDepth = Math.round((window.scrollY + window.innerHeight) / document.body.scrollHeight * 100);
     
     if (scrollDepth > maxScrollDepth) {
       maxScrollDepth = scrollDepth;
       
-      // Track milestone scroll depths
-      if (scrollDepth >= 25 && scrollDepth < 50 && maxScrollDepth >= 25) {
-        trackEvent('scroll', { depth: 25 });
-      } else if (scrollDepth >= 50 && scrollDepth < 75 && maxScrollDepth >= 50) {
-        trackEvent('scroll', { depth: 50 });
-      } else if (scrollDepth >= 75 && scrollDepth < 90 && maxScrollDepth >= 75) {
-        trackEvent('scroll', { depth: 75 });
-      } else if (scrollDepth >= 90 && maxScrollDepth >= 90) {
-        trackEvent('scroll', { depth: 90 });
-      }
+      // Track milestone scroll depths for engagement analysis
+      const milestones = [25, 50, 75, 90];
+      milestones.forEach(milestone => {
+        if (scrollDepth >= milestone && !scrollMilestones[milestone]) {
+          scrollMilestones[milestone] = true;
+          trackEvent('scroll_milestone', { 
+            depth: milestone,
+            timeToReach: Date.now() - pageStartTime,
+            scrollSpeed: 'normal' // Could calculate actual speed
+          });
+        }
+      });
     }
+  }
+  
+  // Track user engagement and potential exit points
+  let lastActivity = Date.now();
+  let engagementScore = 0;
+  
+  function trackEngagement() {
+    engagementScore++;
+    lastActivity = Date.now();
+  }
+  
+  // Track when user might be leaving (idle detection)
+  let idleTimer;
+  function resetIdleTimer() {
+    clearTimeout(idleTimer);
+    trackEngagement();
+    
+    idleTimer = setTimeout(() => {
+      // User has been idle for 30 seconds - potential exit point
+      trackEvent('potential_exit', {
+        timeOnPage: Date.now() - pageStartTime,
+        engagementScore: engagementScore,
+        maxScrollDepth: maxScrollDepth,
+        lastActiveElement: document.activeElement?.tagName?.toLowerCase() || 'unknown'
+      });
+    }, 30000); // 30 seconds
   }
   
   // Get CSS selector for element
@@ -192,7 +246,52 @@ export async function GET(request: NextRequest) {
     trackPageView();
   }
   
-  // Set up event listeners
+  // Conversion tracking (customize these selectors for each customer)
+  function trackConversions() {
+    // Common conversion indicators - can be customized per domain
+    const conversionSelectors = [
+      '.checkout-complete',
+      '.order-confirmation',
+      '.thank-you',
+      '.purchase-success',
+      '#order-complete',
+      '[data-conversion]'
+    ];
+    
+    conversionSelectors.forEach(selector => {
+      const elements = document.querySelectorAll(selector);
+      if (elements.length > 0) {
+        trackEvent('conversion', {
+          type: 'purchase',
+          selector: selector,
+          conversionPage: window.location.pathname,
+          timeToConvert: Date.now() - pageStartTime
+        });
+      }
+    });
+    
+    // Check URL patterns for conversions
+    const conversionUrls = [
+      '/thank-you',
+      '/order-complete',
+      '/purchase-success',
+      '/checkout/success'
+    ];
+    
+    const currentPath = window.location.pathname.toLowerCase();
+    conversionUrls.forEach(url => {
+      if (currentPath.includes(url.toLowerCase())) {
+        trackEvent('conversion', {
+          type: 'purchase',
+          urlPattern: url,
+          conversionPage: currentPath,
+          timeToConvert: Date.now() - pageStartTime
+        });
+      }
+    });
+  }
+  
+  // Set up event listeners with engagement tracking
   document.addEventListener('click', trackClick, true);
   document.addEventListener('submit', trackFormSubmit, true);
   
@@ -203,9 +302,25 @@ export async function GET(request: NextRequest) {
     scrollTimeout = setTimeout(trackScroll, 250);
   });
   
-  // Track page exit events
-  window.addEventListener('beforeunload', trackPageExit);
-  window.addEventListener('pagehide', trackPageExit);
+  // Track page exit events with engagement data
+  function trackEngagedExit() {
+    trackEvent('page_exit', {
+      exitPage: window.location.pathname + window.location.search,
+      timeOnPage: Date.now() - pageStartTime,
+      engagementScore: engagementScore,
+      maxScrollDepth: maxScrollDepth,
+      scrollMilestones: Object.keys(scrollMilestones).map(Number),
+      exitType: 'navigation'
+    });
+  }
+  
+  window.addEventListener('beforeunload', trackEngagedExit);
+  window.addEventListener('pagehide', trackEngagedExit);
+  
+  // Track user engagement activities
+  ['mousedown', 'mousemove', 'keypress', 'touchstart'].forEach(event => {
+    document.addEventListener(event, resetIdleTimer, true);
+  });
   
   // Track visibility changes (tab switching)
   document.addEventListener('visibilitychange', function() {
@@ -233,6 +348,9 @@ export async function GET(request: NextRequest) {
   });
   
   resetInactivityTimer();
+  
+  // Check for conversions after page load
+  setTimeout(trackConversions, 1000); // Wait 1 second for page to fully load
   
   debugLog('Tracking initialized successfully');
   
