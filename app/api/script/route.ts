@@ -62,6 +62,8 @@ export async function GET(request: NextRequest) {
     debugLog('Tracking event', payload);
     
     // Send to tracking endpoint with enhanced error handling
+    debugLog('Making request to:', apiEndpoint);
+    
     fetch(apiEndpoint, {
       method: 'POST',
       headers: {
