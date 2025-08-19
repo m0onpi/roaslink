@@ -173,10 +173,10 @@ export default function HeatmapPage() {
                   : 'Please check your subscription status'
                 }
               </p>
-                      </div>
-        </motion.div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
     );
   }
 
