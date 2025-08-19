@@ -6,8 +6,8 @@ const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify JWT token
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    // Check authentication using cookie (same as dashboard)
+    const token = request.cookies.get('token')?.value;
     if (!token) {
       return NextResponse.json({ error: 'No token provided' }, { status: 401 });
     }

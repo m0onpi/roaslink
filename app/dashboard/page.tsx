@@ -235,6 +235,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-4">
               <Link href="/tracking" className="text-gray-600 hover:text-gray-900 transition-colors">Tracking Script</Link>
               <Link href="/analytics" className="text-gray-600 hover:text-gray-900 transition-colors">Analytics</Link>
+              <Link href="/heatmap" className="text-purple-600 hover:text-purple-800 transition-colors font-medium">🔥 Exit Heatmap</Link>
               {user && (
                 <div className="text-sm text-gray-600">
                   Welcome, <span className="font-semibold">{user.name}</span>

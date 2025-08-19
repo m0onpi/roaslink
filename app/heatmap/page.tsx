@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { useRouter } from 'next/navigation';
 
 interface ExitHeatmapData {
   page: string;
@@ -38,16 +38,68 @@ interface HeatmapAnalytics {
   };
 }
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  subscriptionStatus: string;
+  planType: string;
+  subscriptionEndsAt: string;
+  domainLimit: number;
+}
+
 export default function HeatmapPage() {
-  const { token } = useAuth();
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [hasAccess, setHasAccess] = useState(false);
   const [analytics, setAnalytics] = useState<HeatmapAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedDomain, setSelectedDomain] = useState<string>('');
   const [selectedPage, setSelectedPage] = useState<string>('');
   const [timeRange, setTimeRange] = useState<number>(7);
 
+  useEffect(() => {
+    checkUserAccess();
+  }, []);
+
+  useEffect(() => {
+    if (hasAccess) {
+      fetchHeatmapData();
+    }
+  }, [hasAccess, selectedDomain, selectedPage, timeRange]);
+
+  const checkUserAccess = async () => {
+    try {
+      const response = await fetch('/api/auth/check-access', {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          router.push('/auth?next=/heatmap');
+          return;
+        }
+        throw new Error('Failed to check access');
+      }
+
+      const data = await response.json();
+      if (data.hasAccess) {
+        setHasAccess(true);
+        setUser(data.user);
+      } else {
+        setHasAccess(false);
+        setUser(data.user);
+      }
+    } catch (error) {
+      console.error('Access check error:', error);
+      router.push('/auth?next=/heatmap');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchHeatmapData = async () => {
-    if (!token) return;
+    if (!hasAccess) return;
     
     setLoading(true);
     try {
@@ -58,12 +110,14 @@ export default function HeatmapPage() {
       });
 
       const response = await fetch(`/api/analytics/heatmap?${params}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
       });
 
       if (response.ok) {
         const data = await response.json();
         setAnalytics(data);
+      } else if (response.status === 401) {
+        router.push('/auth?next=/heatmap');
       }
     } catch (error) {
       console.error('Failed to fetch heatmap data:', error);
@@ -72,16 +126,46 @@ export default function HeatmapPage() {
     }
   };
 
-  useEffect(() => {
-    fetchHeatmapData();
-  }, [token, selectedDomain, selectedPage, timeRange]);
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading heatmap analytics...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto">
+          <div className="bg-white rounded-lg shadow-lg p-8">
+            <div className="text-yellow-500 mb-4">
+              <svg className="w-16 h-16 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Required</h2>
+            <p className="text-gray-600 mb-6">
+              You need an active subscription to access heatmap analytics.
+            </p>
+            <div className="space-y-3">
+              <button
+                onClick={() => router.push('/dashboard')}
+                className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Go to Dashboard
+              </button>
+              <p className="text-sm text-gray-500">
+                {user?.subscriptionStatus === 'trial' 
+                  ? 'Upgrade your plan to unlock analytics'
+                  : 'Please check your subscription status'
+                }
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -119,12 +203,36 @@ export default function HeatmapPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        {/* Header */}
+        {/* Navigation */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">User Exit Heatmap</h1>
-          <p className="mt-2 text-gray-600">
-            Discover where users abandon your site and optimize conversion paths
-          </p>
+          <nav className="flex items-center space-x-4 mb-6">
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="text-blue-600 hover:text-blue-800 font-medium"
+            >
+              ← Back to Dashboard
+            </button>
+            <span className="text-gray-400">|</span>
+            <span className="text-gray-600">Heatmap Analytics</span>
+          </nav>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">User Exit Heatmap</h1>
+              <p className="mt-2 text-gray-600">
+                Discover where users abandon your site and optimize conversion paths
+              </p>
+            </div>
+            
+            {user && (
+              <div className="text-right">
+                <p className="text-sm text-gray-600">Welcome back, {user.name}</p>
+                <p className="text-xs text-gray-500 capitalize">
+                  {user.subscriptionStatus} • {user.planType}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Filters */}
