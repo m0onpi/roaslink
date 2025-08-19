@@ -35,6 +35,20 @@ export async function GET(request: NextRequest) {
 
     const domainIds = userDomains.map(d => d.id);
     const dateFilter = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    
+    console.log('Heatmap query params:', {
+      userId: decoded.userId,
+      domainIds,
+      dateFilter,
+      domainFilter,
+      pageFilter,
+      days
+    });
+    
+    // Quick check - do we have any events at all?
+    const totalEvents = await prisma.trackingEvent.count();
+    const totalSessions = await prisma.trackingSession.count();
+    console.log('Database totals:', { totalEvents, totalSessions });
 
     // Build where clause
     const whereClause: any = {
@@ -45,6 +59,26 @@ export async function GET(request: NextRequest) {
     if (domainFilter) {
       whereClause.domain = domainFilter;
     }
+
+    // First, let's get all events to see what we have
+    const allEvents = await prisma.trackingEvent.findMany({
+      where: {
+        session: whereClause,
+      },
+      select: {
+        eventType: true,
+        page: true,
+        timestamp: true,
+        session: {
+          select: {
+            domain: true,
+          }
+        }
+      },
+      take: 50,
+    });
+    
+    console.log('All events sample:', allEvents.map(e => ({ type: e.eventType, page: e.page, domain: e.session.domain })));
 
     // Get exit/abandon events with smart filtering
     const exitEvents = await prisma.trackingEvent.findMany({
@@ -74,6 +108,8 @@ export async function GET(request: NextRequest) {
       take: 1000, // Limit to prevent large queries
     });
 
+    console.log('Exit events found:', exitEvents.length);
+
     // Get interaction events for heatmap (only meaningful ones)
     const interactionEvents = await prisma.trackingEvent.findMany({
       where: {
@@ -94,6 +130,8 @@ export async function GET(request: NextRequest) {
       orderBy: { timestamp: 'desc' },
       take: 500, // Limit interaction events
     });
+
+    console.log('Interaction events found:', interactionEvents.length);
 
     // Process exit data for heatmap
     const exitHeatmapData = exitEvents
@@ -209,7 +247,7 @@ export async function GET(request: NextRequest) {
       return acc;
     }, {});
 
-    return NextResponse.json({
+    const result = {
       exitHeatmap: Object.values(exitByPage),
       clickHeatmap: Object.values(clickDensity),
       conversions: conversionsByPage,
@@ -219,8 +257,24 @@ export async function GET(request: NextRequest) {
         totalConversions: conversions.length,
         timeRange: { days, from: dateFilter },
         domains: userDomains.map(d => d.domain),
+      },
+      debug: {
+        totalEvents,
+        totalSessions,
+        userDomains: userDomains.length,
+        rawExitEvents: exitEvents.length,
+        rawInteractionEvents: interactionEvents.length,
       }
+    };
+    
+    console.log('Returning heatmap result:', {
+      exitHeatmapCount: result.exitHeatmap.length,
+      clickHeatmapCount: result.clickHeatmap.length,
+      totalExits: result.summary.totalExits,
+      totalInteractions: result.summary.totalInteractions
     });
+
+    return NextResponse.json(result);
 
   } catch (error) {
     console.error('Heatmap analytics error:', error);

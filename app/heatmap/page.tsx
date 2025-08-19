@@ -115,9 +115,12 @@ export default function HeatmapPage() {
 
       if (response.ok) {
         const data = await response.json();
+        console.log('Heatmap data received:', data);
         setAnalytics(data);
       } else if (response.status === 401) {
         router.push('/auth?next=/heatmap');
+      } else {
+        console.error('Heatmap API error:', response.status, await response.text());
       }
     } catch (error) {
       console.error('Failed to fetch heatmap data:', error);
@@ -320,6 +323,20 @@ export default function HeatmapPage() {
             </p>
           </div>
         </div>
+
+        {/* Debug Info (temporary) */}
+        {(analytics as any).debug && (
+          <div className="bg-gray-100 rounded-lg p-4 mb-8">
+            <h3 className="font-semibold text-gray-700 mb-2">Debug Information</h3>
+            <div className="text-sm text-gray-600 space-y-1">
+              <p>Total events in database: {(analytics as any).debug.totalEvents}</p>
+              <p>Total sessions in database: {(analytics as any).debug.totalSessions}</p>
+              <p>User domains: {(analytics as any).debug.userDomains}</p>
+              <p>Raw exit events found: {(analytics as any).debug.rawExitEvents}</p>
+              <p>Raw interaction events found: {(analytics as any).debug.rawInteractionEvents}</p>
+            </div>
+          </div>
+        )}
 
         {/* Exit Heatmap */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
