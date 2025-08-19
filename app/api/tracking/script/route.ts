@@ -147,7 +147,7 @@ export async function GET(request: NextRequest) {
     
     debugLog('Tracking event', payload);
     
-    // Send to RoasLink tracking endpoint
+    // Send to RoasLink tracking endpoint with enhanced error handling
     fetch('https://roaslink.co.uk/api/tracking/data', {
       method: 'POST',
       headers: {
@@ -155,8 +155,41 @@ export async function GET(request: NextRequest) {
       },
       body: JSON.stringify(payload),
       keepalive: true
-    }).catch(error => {
-      debugLog('Failed to send tracking data', error);
+    })
+    .then(response => {
+      debugLog('Tracking response received', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+      
+      if (!response.ok) {
+        throw new Error(\`HTTP \${response.status}: \${response.statusText}\`);
+      }
+      
+      return response.text();
+    })
+    .then(responseText => {
+      debugLog('Tracking success', responseText);
+    })
+    .catch(error => {
+      debugLog('Failed to send tracking data', {
+        error: error.message,
+        stack: error.stack,
+        type: error.constructor.name
+      });
+      
+      // Additional diagnostic fetch to test connectivity
+      if (debugMode) {
+        debugLog('Running diagnostic test...');
+        fetch('https://roaslink.co.uk/api/tracking/diagnose', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        })
+        .then(r => r.json())
+        .then(result => debugLog('Diagnostic test result', result))
+        .catch(diagError => debugLog('Diagnostic test failed', diagError));
+      }
     });
   }
   
