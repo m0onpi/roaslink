@@ -2,13 +2,24 @@
 
 ## 🚀 Quick Start
 
-Add the following script tag to your website's `<head>` section or before the closing `</body>` tag:
+### Method 1: Self-Hosted Script (Recommended)
+
+1. **Download** the `smartdirect-tracking.js` file
+2. **Upload** it to your website (e.g., `/js/smartdirect-tracking.js`)
+3. **Edit** the script and replace `CUSTOMER_DOMAIN_HERE` with your domain
+4. **Add** the script tag to your website:
+
+```html
+<script src="/js/smartdirect-tracking.js"></script>
+```
+
+### Method 2: Remote Script (May have CORS issues)
 
 ```html
 <script src="https://roaslink.co.uk/api/script?domain=yourdomain.com"></script>
 ```
 
-**Replace `yourdomain.com` with your actual domain.**
+**Note**: Method 2 may cause CORS issues due to cross-origin restrictions.
 
 ## 📋 Integration Examples
 

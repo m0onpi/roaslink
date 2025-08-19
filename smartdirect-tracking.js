@@ -1,29 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const domain = searchParams.get('domain');
-  const debug = searchParams.get('debug') === 'true';
-
-  if (!domain) {
-    return new NextResponse('Missing required parameter: domain', { status: 400 });
-  }
-
-  // Basic domain validation
-  const cleanDomain = domain.replace(/^https?:\/\//, '');
-  const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9](\.[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9])*\.[a-zA-Z]{2,}$/;
-  if (!domainRegex.test(cleanDomain)) {
-    return new NextResponse('Invalid domain format', { status: 400 });
-  }
-
-  const script = `(function() {
+(function() {
   'use strict';
   
-  // Get domain from script tag data attribute or URL parameter
-  const currentScript = document.currentScript;
-  const domain = currentScript?.getAttribute('data-domain') || '${cleanDomain}';
-  const debugMode = currentScript?.getAttribute('data-debug') === 'true' || ${debug};
-  // Using pixel tracking - no CORS issues!
+  // Configuration - customer sets these
+  const config = {
+    domain: 'CUSTOMER_DOMAIN_HERE', // Customer replaces this
+    apiEndpoint: 'https://roaslink.co.uk/api/tracking/data',
+    debug: false // Set to true for testing
+  };
   
   // Generate unique session ID
   function generateSessionId() {
@@ -39,51 +22,58 @@ export async function GET(request: NextRequest) {
   
   // Debug logging function
   function debugLog(message, data) {
-    if (debugMode) {
+    if (config.debug) {
       console.log('[SmartDirect Tracking]', message, data || '');
     }
   }
   
-  debugLog('Tracking script loaded', { domain, sessionId, trackingMethod: 'pixel' });
+  debugLog('Tracking script loaded', { domain: config.domain, sessionId });
   
-  // Track data using pixel tracking (no CORS issues)
+  // Track data to server
   function trackEvent(eventType, data = {}) {
-    const params = new URLSearchParams({
+    const payload = {
       sessionId: sessionId,
-      domain: domain,
+      domain: config.domain,
       eventType: eventType,
       page: window.location.pathname + window.location.search,
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
       referrer: document.referrer,
-      title: document.title,
-      url: window.location.href,
-      // Add event-specific data
-      ...Object.fromEntries(
-        Object.entries(data).map(([key, value]) => [
-          \`data_\${key}\`, 
-          typeof value === 'object' ? JSON.stringify(value) : String(value)
-        ])
-      )
+      ...data
+    };
+    
+    debugLog('Tracking event', payload);
+    
+    // Send to tracking endpoint
+    fetch(config.apiEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+      keepalive: true
+    })
+    .then(response => {
+      debugLog('Tracking response received', {
+        status: response.status,
+        statusText: response.statusText
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      return response.text();
+    })
+    .then(responseText => {
+      debugLog('Tracking success', responseText);
+    })
+    .catch(error => {
+      debugLog('Failed to send tracking data', {
+        error: error.message,
+        type: error.constructor.name
+      });
     });
-    
-    debugLog('Tracking event', { eventType, domain, data });
-    
-    // Use pixel tracking - no CORS issues!
-    const trackingUrl = \`https://roaslink.co.uk/api/tracking/pixel?\${params.toString()}\`;
-    debugLog('Sending pixel request to:', trackingUrl);
-    
-    // Create invisible 1x1 pixel image
-    const pixel = new Image(1, 1);
-    pixel.onload = function() {
-      debugLog('Tracking pixel loaded successfully');
-    };
-    pixel.onerror = function() {
-      debugLog('Tracking pixel failed to load');
-    };
-    
-    // This triggers the GET request - no CORS restrictions!
-    pixel.src = trackingUrl;
   }
   
   // Track page view
@@ -236,15 +226,4 @@ export async function GET(request: NextRequest) {
   
   debugLog('Tracking initialized successfully');
   
-})();`;
-
-  return new NextResponse(script, {
-    headers: {
-      'Content-Type': 'application/javascript',
-      'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    },
-  });
-}
+})();
