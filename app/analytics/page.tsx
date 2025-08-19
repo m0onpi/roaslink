@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { ThemeToggle } from '../components/ThemeToggle';
 
 interface Domain {
   id: string;
@@ -135,33 +137,53 @@ export default function AnalyticsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading analytics...</p>
-        </div>
+      <div className="min-h-screen bg-gradient-light dark:bg-gradient-dark flex items-center justify-center">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center glass-strong p-8 rounded-2xl"
+        >
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-light-accent dark:border-dark-accent mx-auto"></div>
+          <p className="mt-4 text-light-text dark:text-dark-text">Loading analytics...</p>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-light dark:bg-gradient-dark">
       {/* Navigation */}
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm">
+      <header className="glass border-b border-light-border dark:border-dark-border">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+              <motion.div 
+                whileHover={{ scale: 1.05, rotate: 5 }}
+                className="w-10 h-10 bg-gradient-accent-light dark:bg-gradient-accent-dark rounded-xl flex items-center justify-center shadow-lg"
+              >
                 <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
                   <path fillRule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 001 1h6a1 1 0 001-1V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3z"/>
                 </svg>
-              </div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">RoasLink</h1>
+              </motion.div>
+              <h1 className="text-2xl font-bold gradient-text">RoasLink</h1>
             </div>
             <div className="flex items-center gap-4">
-              <button onClick={() => router.push('/dashboard')} className="text-gray-600 hover:text-gray-900 transition-colors">Dashboard</button>
-              <button onClick={() => router.push('/tracking')} className="text-gray-600 hover:text-gray-900 transition-colors">Tracking Script</button>
+              <motion.button 
+                whileHover={{ scale: 1.05 }}
+                onClick={() => router.push('/dashboard')} 
+                className="text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text dark:hover:text-dark-text transition-colors"
+              >
+                Dashboard
+              </motion.button>
+              <motion.button 
+                whileHover={{ scale: 1.05 }}
+                onClick={() => router.push('/tracking')} 
+                className="text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text dark:hover:text-dark-text transition-colors"
+              >
+                Tracking Script
+              </motion.button>
+              <ThemeToggle size="sm" />
             </div>
           </div>
         </div>
@@ -170,25 +192,34 @@ export default function AnalyticsPage() {
       <div className="py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">Website Analytics</h1>
-            <p className="text-lg text-gray-600">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-8"
+          >
+            <h1 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">Website Analytics</h1>
+            <p className="text-lg text-light-text-secondary dark:text-dark-text-secondary">
               Understand user behavior and identify where visitors exit your site
             </p>
-          </div>
+          </motion.div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="card p-6 mb-8"
+        >
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label htmlFor="domain-select" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="domain-select" className="block text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary mb-2">
                 Domain
               </label>
               <select
                 id="domain-select"
                 value={selectedDomain}
                 onChange={(e) => setSelectedDomain(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="input-field"
               >
                 <option value="">All Domains</option>
                 {domains.map((domain) => (
@@ -199,7 +230,7 @@ export default function AnalyticsPage() {
               </select>
             </div>
             <div>
-              <label htmlFor="start-date" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="start-date" className="block text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary mb-2">
                 Start Date
               </label>
               <input
@@ -207,11 +238,11 @@ export default function AnalyticsPage() {
                 id="start-date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="input-field"
               />
             </div>
             <div>
-              <label htmlFor="end-date" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="end-date" className="block text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary mb-2">
                 End Date
               </label>
               <input
@@ -219,111 +250,166 @@ export default function AnalyticsPage() {
                 id="end-date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="input-field"
               />
             </div>
             <div className="flex items-end">
-              <button
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={fetchAnalytics}
-                className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                className="btn-primary w-full"
               >
                 Refresh Data
-              </button>
+              </motion.button>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {analytics && (
           <>
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Total Sessions</h3>
-                <p className="text-3xl font-bold text-gray-900 mt-2">{analytics.summary.totalSessions}</p>
-              </div>
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Avg Duration</h3>
-                <p className="text-3xl font-bold text-gray-900 mt-2">{formatDuration(analytics.summary.averageDuration)}</p>
-              </div>
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Avg Pages/Session</h3>
-                <p className="text-3xl font-bold text-gray-900 mt-2">{analytics.summary.averagePageCount}</p>
-              </div>
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Total Events</h3>
-                <p className="text-3xl font-bold text-gray-900 mt-2">{analytics.summary.totalEvents}</p>
-              </div>
-            </div>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
+            >
+              {[
+                { title: 'Total Sessions', value: analytics.summary.totalSessions, color: 'text-blue-600 dark:text-blue-400' },
+                { title: 'Avg Duration', value: formatDuration(analytics.summary.averageDuration), color: 'text-green-600 dark:text-green-400' },
+                { title: 'Avg Pages/Session', value: analytics.summary.averagePageCount, color: 'text-purple-600 dark:text-purple-400' },
+                { title: 'Total Events', value: analytics.summary.totalEvents, color: 'text-orange-600 dark:text-orange-400' }
+              ].map((card, index) => (
+                <motion.div 
+                  key={card.title}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.3 + index * 0.1 }}
+                  className="card card-hover p-6 relative overflow-hidden"
+                >
+                  <div className="absolute top-0 right-0 w-20 h-20 opacity-10">
+                    <div className={`w-full h-full rounded-full ${card.color.replace('text-', 'bg-').replace('dark:', '').split(' ')[0]}`} />
+                  </div>
+                  <h3 className="text-sm font-medium text-light-text-muted dark:text-dark-text-muted uppercase tracking-wide relative z-10">
+                    {card.title}
+                  </h3>
+                  <p className={`text-3xl font-bold mt-2 ${card.color} relative z-10`}>
+                    {card.value}
+                  </p>
+                </motion.div>
+              ))}
+            </motion.div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8"
+            >
               {/* Top Exit Pages */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Top Exit Pages</h3>
+              <div className="card p-6">
+                <h3 className="text-lg font-medium text-light-text dark:text-dark-text mb-4">Top Exit Pages</h3>
                 <div className="space-y-3">
                   {analytics.exitPages.slice(0, 5).map((exitPage, index) => (
-                    <div key={index} className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600 truncate flex-1 mr-4">{exitPage.page}</span>
-                      <span className="text-sm font-medium text-gray-900">{exitPage.count} exits</span>
-                    </div>
+                    <motion.div 
+                      key={index}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.5 + index * 0.1 }}
+                      className="flex justify-between items-center p-3 rounded-lg hover:bg-light-surface-hover dark:hover:bg-dark-surface-hover transition-colors"
+                    >
+                      <span className="text-sm text-light-text-secondary dark:text-dark-text-secondary truncate flex-1 mr-4">{exitPage.page}</span>
+                      <span className="text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded-full">
+                        {exitPage.count} exits
+                      </span>
+                    </motion.div>
                   ))}
                   {analytics.exitPages.length === 0 && (
-                    <p className="text-gray-500 text-sm">No exit data available</p>
+                    <p className="text-light-text-muted dark:text-dark-text-muted text-sm text-center py-4">No exit data available</p>
                   )}
                 </div>
               </div>
 
               {/* Top Pages */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Most Visited Pages</h3>
+              <div className="card p-6">
+                <h3 className="text-lg font-medium text-light-text dark:text-dark-text mb-4">Most Visited Pages</h3>
                 <div className="space-y-3">
                   {analytics.pageViews.slice(0, 5).map((pageView, index) => (
-                    <div key={index} className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600 truncate flex-1 mr-4">{pageView.page}</span>
-                      <span className="text-sm font-medium text-gray-900">{pageView.count} views</span>
-                    </div>
+                    <motion.div 
+                      key={index}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.5 + index * 0.1 }}
+                      className="flex justify-between items-center p-3 rounded-lg hover:bg-light-surface-hover dark:hover:bg-dark-surface-hover transition-colors"
+                    >
+                      <span className="text-sm text-light-text-secondary dark:text-dark-text-secondary truncate flex-1 mr-4">{pageView.page}</span>
+                      <span className="text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-full">
+                        {pageView.count} views
+                      </span>
+                    </motion.div>
                   ))}
                 </div>
               </div>
 
               {/* Event Types */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Event Types</h3>
+              <div className="card p-6">
+                <h3 className="text-lg font-medium text-light-text dark:text-dark-text mb-4">Event Types</h3>
                 <div className="space-y-3">
                   {analytics.eventTypes.map((eventType, index) => (
-                    <div key={index} className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600 capitalize">{eventType.type.replace('_', ' ')}</span>
-                      <span className="text-sm font-medium text-gray-900">{eventType.count}</span>
-                    </div>
+                    <motion.div 
+                      key={index}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.5 + index * 0.1 }}
+                      className="flex justify-between items-center p-3 rounded-lg hover:bg-light-surface-hover dark:hover:bg-dark-surface-hover transition-colors"
+                    >
+                      <span className="text-sm text-light-text-secondary dark:text-dark-text-secondary capitalize">{eventType.type.replace('_', ' ')}</span>
+                      <span className="text-sm font-medium text-light-text dark:text-dark-text bg-light-secondary dark:bg-dark-tertiary px-2 py-1 rounded-full">
+                        {eventType.count}
+                      </span>
+                    </motion.div>
                   ))}
                 </div>
               </div>
 
               {/* Hourly Activity */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Activity (Last 24 Hours)</h3>
+              <div className="card p-6">
+                <h3 className="text-lg font-medium text-light-text dark:text-dark-text mb-4">Activity (Last 24 Hours)</h3>
                 <div className="grid grid-cols-6 gap-2">
                   {analytics.hourlyActivity.slice(-12).map((hour, index) => (
-                    <div key={index} className="text-center">
-                      <div className="text-xs text-gray-500 mb-1">{hour.hour}:00</div>
-                      <div className="bg-blue-100 rounded-sm h-8 flex items-end justify-center">
-                        <div 
-                          className="bg-blue-600 w-full rounded-sm"
-                          style={{ 
-                            height: `${Math.max(4, (hour.count / Math.max(...analytics.hourlyActivity.map(h => h.count), 1)) * 100)}%` 
-                          }}
-                        ></div>
+                    <motion.div 
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.6 + index * 0.05 }}
+                      className="text-center"
+                    >
+                      <div className="text-xs text-light-text-muted dark:text-dark-text-muted mb-1">{hour.hour}:00</div>
+                      <div className="bg-light-secondary dark:bg-dark-tertiary rounded-sm h-8 flex items-end justify-center">
+                        <motion.div 
+                          initial={{ height: 0 }}
+                          animate={{ height: `${Math.max(4, (hour.count / Math.max(...analytics.hourlyActivity.map(h => h.count), 1)) * 100)}%` }}
+                          transition={{ delay: 0.8 + index * 0.05, duration: 0.5 }}
+                          className="bg-light-accent dark:bg-dark-accent w-full rounded-sm"
+                        />
                       </div>
-                      <div className="text-xs text-gray-700 mt-1">{hour.count}</div>
-                    </div>
+                      <div className="text-xs text-light-text dark:text-dark-text mt-1">{hour.count}</div>
+                    </motion.div>
                   ))}
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Recent Sessions */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900">Recent Sessions</h3>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="card overflow-hidden"
+            >
+              <div className="px-6 py-4 border-b border-light-border dark:border-dark-border">
+                <h3 className="text-lg font-medium text-light-text dark:text-dark-text">Recent Sessions</h3>
               </div>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">

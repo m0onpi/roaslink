@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9](\.[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9])*\.[a-zA-Z]{2,}$/;
   if (!domainRegex.test(cleanTarget)) {
     return new NextResponse('Invalid domain format', { status: 400 });
-  }
+  }9
 
   const script = `(function() {
   'use strict';

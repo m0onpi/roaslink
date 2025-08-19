@@ -7,22 +7,114 @@
   --foreground: #171717;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.dark {
+  --background: #0f0f23;
+  --foreground: #e2e8f0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-gradient-light dark:bg-gradient-dark text-light-text dark:text-dark-text transition-colors duration-300;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  
+  html {
+    scroll-behavior: smooth;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  /* Custom scrollbar for dark mode */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.gray.400') theme('colors.gray.100');
+  }
+  
+  .dark .scrollbar-thin {
+    scrollbar-color: theme('colors.gray.600') theme('colors.gray.800');
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-gray-100 dark:bg-gray-800 rounded-full;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-gray-400 dark:bg-gray-600 rounded-full hover:bg-gray-500 dark:hover:bg-gray-500;
+  }
+  
+  /* Glass morphism effect */
+  .glass {
+    @apply bg-white/80 dark:bg-dark-secondary/80 backdrop-blur-xl border border-light-border dark:border-dark-border;
+  }
+  
+  .glass-strong {
+    @apply bg-white/90 dark:bg-dark-secondary/90 backdrop-blur-2xl border border-light-border dark:border-dark-border shadow-lg;
+  }
+  
+  /* Card styles */
+  .card {
+    @apply bg-light-surface dark:bg-dark-secondary border border-light-border dark:border-dark-border rounded-2xl shadow-sm hover:shadow-md dark:shadow-2xl transition-all duration-300;
+  }
+  
+  .card-hover {
+    @apply hover:bg-light-surface-hover dark:hover:bg-dark-surface-hover transform hover:scale-[1.02] transition-all duration-300;
+  }
+  
+  /* Button styles */
+  .btn-primary {
+    @apply bg-gradient-accent-light dark:bg-gradient-accent-dark text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300;
+  }
+  
+  .btn-secondary {
+    @apply bg-light-secondary dark:bg-dark-tertiary text-light-text dark:text-dark-text border border-light-border dark:border-dark-border font-medium px-6 py-3 rounded-xl hover:bg-light-surface-hover dark:hover:bg-dark-surface-hover transition-all duration-300;
+  }
+  
+  /* Input styles */
+  .input-field {
+    @apply w-full px-4 py-3 bg-light-secondary dark:bg-dark-tertiary border border-light-border dark:border-dark-border rounded-xl text-light-text dark:text-dark-text placeholder-light-text-muted dark:placeholder-dark-text-muted focus:outline-none focus:ring-2 focus:ring-light-accent dark:focus:ring-dark-accent focus:border-transparent transition-all duration-300;
+  }
+  
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-accent-light dark:bg-gradient-accent-dark bg-clip-text text-transparent;
+  }
+  
+  /* Loading animations */
+  .loading-shimmer {
+    @apply animate-pulse bg-gray-200 dark:bg-gray-700 rounded;
+  }
+}
+
+@layer utilities {
+  /* Theme transition utilities */
+  .theme-transition {
+    @apply transition-colors duration-300 ease-in-out;
+  }
+  
+  /* Shadow utilities for dark mode */
+  .shadow-light {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  }
+  
+  .shadow-dark {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Text shadow for better readability */
+  .text-shadow {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  }
+  
+  .text-shadow-light {
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+  }
 }

@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { ThemeToggle } from '../components/ThemeToggle';
 
 interface ExitHeatmapData {
   page: string;
@@ -131,11 +133,15 @@ export default function HeatmapPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading heatmap analytics...</p>
-        </div>
+      <div className="min-h-screen bg-gradient-light dark:bg-gradient-dark flex items-center justify-center">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center glass-strong p-8 rounded-2xl"
+        >
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-light-accent dark:border-dark-accent mx-auto"></div>
+          <p className="mt-4 text-light-text dark:text-dark-text">Loading heatmap analytics...</p>
+        </motion.div>
       </div>
     );
   }
@@ -203,52 +209,72 @@ export default function HeatmapPage() {
   const maxExits = Math.max(...analytics.exitHeatmap.map(e => e.totalExits), 1);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-light dark:bg-gradient-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         {/* Navigation */}
-        <div className="mb-8">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
           <nav className="flex items-center space-x-4 mb-6">
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
               onClick={() => router.push('/dashboard')}
-              className="text-blue-600 hover:text-blue-800 font-medium"
+              className="text-light-accent dark:text-dark-accent hover:text-light-accent-hover dark:hover:text-dark-accent-hover font-medium transition-colors"
             >
               ← Back to Dashboard
-            </button>
-            <span className="text-gray-400">|</span>
-            <span className="text-gray-600">Heatmap Analytics</span>
+            </motion.button>
+            <span className="text-light-text-muted dark:text-dark-text-muted">|</span>
+            <span className="text-light-text-secondary dark:text-dark-text-secondary">Heatmap Analytics</span>
+            <div className="ml-auto">
+              <ThemeToggle size="sm" />
+            </div>
           </nav>
           
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">User Exit Heatmap</h1>
-              <p className="mt-2 text-gray-600">
+              <h1 className="text-3xl font-bold text-light-text dark:text-dark-text">🔥 User Exit Heatmap</h1>
+              <p className="mt-2 text-light-text-secondary dark:text-dark-text-secondary">
                 Discover where users abandon your site and optimize conversion paths
               </p>
             </div>
             
             {user && (
-              <div className="text-right">
-                <p className="text-sm text-gray-600">Welcome back, {user.name}</p>
-                <p className="text-xs text-gray-500 capitalize">
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-right glass p-4 rounded-xl"
+              >
+                <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
+                  Welcome back, <span className="font-semibold text-light-text dark:text-dark-text">{user.name}</span>
+                </p>
+                <p className="text-xs text-light-text-muted dark:text-dark-text-muted capitalize">
                   {user.subscriptionStatus} • {user.planType}
                 </p>
-              </div>
+              </motion.div>
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="card p-6 mb-8"
+        >
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary mb-2">
                 Domain
               </label>
               <select
                 value={selectedDomain}
                 onChange={(e) => setSelectedDomain(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="input-field"
               >
                 <option value="">All Domains</option>
                 {analytics.summary.domains.map(domain => (
@@ -258,7 +284,7 @@ export default function HeatmapPage() {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary mb-2">
                 Page Filter
               </label>
               <input
@@ -266,18 +292,18 @@ export default function HeatmapPage() {
                 value={selectedPage}
                 onChange={(e) => setSelectedPage(e.target.value)}
                 placeholder="e.g., /checkout"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="input-field"
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary mb-2">
                 Time Range
               </label>
               <select
                 value={timeRange}
                 onChange={(e) => setTimeRange(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="input-field"
               >
                 <option value={1}>Last 24 hours</option>
                 <option value={7}>Last 7 days</option>
@@ -287,42 +313,55 @@ export default function HeatmapPage() {
             </div>
             
             <div className="flex items-end">
-              <button
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={fetchHeatmapData}
-                className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="btn-primary w-full"
               >
                 Refresh Data
-              </button>
+              </motion.button>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Total Exits</h3>
-            <p className="text-3xl font-bold text-red-600">{analytics.summary.totalExits}</p>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Interactions</h3>
-            <p className="text-3xl font-bold text-blue-600">{analytics.summary.totalInteractions}</p>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Conversions</h3>
-            <p className="text-3xl font-bold text-green-600">{analytics.summary.totalConversions}</p>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Exit Rate</h3>
-            <p className="text-3xl font-bold text-orange-600">
-              {analytics.summary.totalExits > 0 
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
+        >
+          {[
+            { title: 'Total Exits', value: analytics.summary.totalExits, color: 'text-red-600 dark:text-red-400', bgColor: 'bg-red-500' },
+            { title: 'Interactions', value: analytics.summary.totalInteractions, color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-500' },
+            { title: 'Conversions', value: analytics.summary.totalConversions, color: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-500' },
+            { 
+              title: 'Exit Rate', 
+              value: `${analytics.summary.totalExits > 0 
                 ? Math.round((analytics.summary.totalExits / (analytics.summary.totalExits + analytics.summary.totalConversions)) * 100)
-                : 0}%
-            </p>
-          </div>
-        </div>
+                : 0}%`,
+              color: 'text-orange-600 dark:text-orange-400',
+              bgColor: 'bg-orange-500'
+            }
+          ].map((card, index) => (
+            <motion.div 
+              key={card.title}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5 + index * 0.1 }}
+              className="card card-hover p-6 relative overflow-hidden"
+            >
+              <div className={`absolute top-0 right-0 w-20 h-20 opacity-10 ${card.bgColor} rounded-full transform translate-x-8 -translate-y-8`} />
+              <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-2 relative z-10">
+                {card.title}
+              </h3>
+              <p className={`text-3xl font-bold ${card.color} relative z-10`}>
+                {card.value}
+              </p>
+            </motion.div>
+          ))}
+        </motion.div>
 
         {/* Debug Info (temporary) */}
         {(analytics as any).debug && (
@@ -339,21 +378,26 @@ export default function HeatmapPage() {
         )}
 
         {/* Exit Heatmap */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="card p-6 mb-8"
+        >
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Exit Points Heatmap</h2>
+            <h2 className="text-xl font-semibold text-light-text dark:text-dark-text">🔥 Exit Points Heatmap</h2>
             <div className="flex items-center space-x-4 text-sm">
               <div className="flex items-center">
                 <div className="w-4 h-4 bg-green-500 rounded mr-2"></div>
-                <span>Low exits</span>
+                <span className="text-light-text-secondary dark:text-dark-text-secondary">Low exits</span>
               </div>
               <div className="flex items-center">
                 <div className="w-4 h-4 bg-yellow-500 rounded mr-2"></div>
-                <span>Medium exits</span>
+                <span className="text-light-text-secondary dark:text-dark-text-secondary">Medium exits</span>
               </div>
               <div className="flex items-center">
                 <div className="w-4 h-4 bg-red-600 rounded mr-2"></div>
-                <span>High exits</span>
+                <span className="text-light-text-secondary dark:text-dark-text-secondary">High exits</span>
               </div>
             </div>
           </div>
