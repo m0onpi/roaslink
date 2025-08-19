@@ -411,139 +411,185 @@ export default function AnalyticsPage() {
               <div className="px-6 py-4 border-b border-light-border dark:border-dark-border">
                 <h3 className="text-lg font-medium text-light-text dark:text-dark-text">Recent Sessions</h3>
               </div>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+              <div className="overflow-x-auto scrollbar-thin">
+                <table className="min-w-full divide-y divide-light-border dark:divide-dark-border">
+                  <thead className="bg-light-secondary dark:bg-dark-tertiary">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-light-text-muted dark:text-dark-text-muted uppercase tracking-wider">
                         Session
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-light-text-muted dark:text-dark-text-muted uppercase tracking-wider">
                         Domain
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-light-text-muted dark:text-dark-text-muted uppercase tracking-wider">
                         Duration
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-light-text-muted dark:text-dark-text-muted uppercase tracking-wider">
                         Pages
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-light-text-muted dark:text-dark-text-muted uppercase tracking-wider">
                         Exit Page
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-light-text-muted dark:text-dark-text-muted uppercase tracking-wider">
                         Browser
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-light-text-muted dark:text-dark-text-muted uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {analytics.sessions.slice(0, 20).map((session) => (
-                      <tr key={session.id} className="hover:bg-gray-50">
+                  <tbody className="bg-light-surface dark:bg-dark-secondary divide-y divide-light-border dark:divide-dark-border">
+                    {analytics.sessions.slice(0, 20).map((session, index) => (
+                      <motion.tr 
+                        key={session.id} 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.8 + index * 0.02 }}
+                        className="hover:bg-light-surface-hover dark:hover:bg-dark-surface-hover transition-colors"
+                      >
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{formatTimestamp(session.startTime)}</div>
-                          <div className="text-xs text-gray-500">{session.sessionId.slice(-8)}</div>
+                          <div className="text-sm text-light-text dark:text-dark-text">{formatTimestamp(session.startTime)}</div>
+                          <div className="text-xs text-light-text-muted dark:text-dark-text-muted">{session.sessionId.slice(-8)}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-light-text dark:text-dark-text">
                           {session.domainOwner.domain}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-light-text dark:text-dark-text">
                           {formatDuration(session.duration)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-light-text dark:text-dark-text">
                           {session.pageCount}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 max-w-xs truncate">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-light-text-secondary dark:text-dark-text-secondary max-w-xs truncate">
                           {session.exitPage || 'N/A'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-light-text dark:text-dark-text">
                           {getBrowserFromUserAgent(session.userAgent)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <button
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
                             onClick={() => setSelectedSession(session)}
-                            className="text-blue-600 hover:text-blue-900"
+                            className="text-light-accent dark:text-dark-accent hover:text-light-accent-hover dark:hover:text-dark-accent-hover transition-colors"
                           >
                             View Details
-                          </button>
+                          </motion.button>
                         </td>
-                      </tr>
+                      </motion.tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-            </div>
+            </motion.div>
           </>
         )}
 
         {/* Session Details Modal */}
         {selectedSession && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                <h3 className="text-lg font-medium text-gray-900">Session Details</h3>
-                <button
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="card max-w-4xl w-full max-h-[90vh] overflow-hidden"
+            >
+              <div className="px-6 py-4 border-b border-light-border dark:border-dark-border flex justify-between items-center">
+                <h3 className="text-lg font-medium text-light-text dark:text-dark-text">Session Details</h3>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                   onClick={() => setSelectedSession(null)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-light-text-muted dark:text-dark-text-muted hover:text-light-text dark:hover:text-dark-text transition-colors"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                </button>
+                </motion.button>
               </div>
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)] scrollbar-thin">
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Session Info</h4>
+                    <h4 className="font-medium text-light-text dark:text-dark-text mb-2">Session Info</h4>
                     <div className="space-y-1 text-sm">
-                      <p><strong>ID:</strong> {selectedSession.sessionId}</p>
-                      <p><strong>Domain:</strong> {selectedSession.domainOwner.domain}</p>
-                      <p><strong>Start:</strong> {formatTimestamp(selectedSession.startTime)}</p>
-                      <p><strong>Duration:</strong> {formatDuration(selectedSession.duration)}</p>
-                      <p><strong>Pages:</strong> {selectedSession.pageCount}</p>
+                      <p className="text-light-text-secondary dark:text-dark-text-secondary">
+                        <strong className="text-light-text dark:text-dark-text">ID:</strong> {selectedSession.sessionId}
+                      </p>
+                      <p className="text-light-text-secondary dark:text-dark-text-secondary">
+                        <strong className="text-light-text dark:text-dark-text">Domain:</strong> {selectedSession.domainOwner.domain}
+                      </p>
+                      <p className="text-light-text-secondary dark:text-dark-text-secondary">
+                        <strong className="text-light-text dark:text-dark-text">Start:</strong> {formatTimestamp(selectedSession.startTime)}
+                      </p>
+                      <p className="text-light-text-secondary dark:text-dark-text-secondary">
+                        <strong className="text-light-text dark:text-dark-text">Duration:</strong> {formatDuration(selectedSession.duration)}
+                      </p>
+                      <p className="text-light-text-secondary dark:text-dark-text-secondary">
+                        <strong className="text-light-text dark:text-dark-text">Pages:</strong> {selectedSession.pageCount}
+                      </p>
                     </div>
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Technical Info</h4>
+                    <h4 className="font-medium text-light-text dark:text-dark-text mb-2">Technical Info</h4>
                     <div className="space-y-1 text-sm">
-                      <p><strong>Browser:</strong> {getBrowserFromUserAgent(selectedSession.userAgent)}</p>
-                      <p><strong>Referrer:</strong> {selectedSession.referrer || 'Direct'}</p>
-                      <p><strong>Exit Page:</strong> {selectedSession.exitPage || 'N/A'}</p>
-                      <p><strong>Status:</strong> {selectedSession.isActive ? 'Active' : 'Ended'}</p>
+                      <p className="text-light-text-secondary dark:text-dark-text-secondary">
+                        <strong className="text-light-text dark:text-dark-text">Browser:</strong> {getBrowserFromUserAgent(selectedSession.userAgent)}
+                      </p>
+                      <p className="text-light-text-secondary dark:text-dark-text-secondary">
+                        <strong className="text-light-text dark:text-dark-text">Referrer:</strong> {selectedSession.referrer || 'Direct'}
+                      </p>
+                      <p className="text-light-text-secondary dark:text-dark-text-secondary">
+                        <strong className="text-light-text dark:text-dark-text">Exit Page:</strong> {selectedSession.exitPage || 'N/A'}
+                      </p>
+                      <p className="text-light-text-secondary dark:text-dark-text-secondary">
+                        <strong className="text-light-text dark:text-dark-text">Status:</strong> 
+                        <span className={`ml-1 ${selectedSession.isActive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                          {selectedSession.isActive ? 'Active' : 'Ended'}
+                        </span>
+                      </p>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-4">Event Timeline</h4>
+                  <h4 className="font-medium text-light-text dark:text-dark-text mb-4">Event Timeline</h4>
                   <div className="space-y-3">
                     {selectedSession.events.map((event, index) => (
-                      <div key={event.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                        <div className="flex-shrink-0 w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
+                      <motion.div 
+                        key={event.id} 
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="flex items-start space-x-3 p-3 bg-light-secondary dark:bg-dark-tertiary rounded-lg"
+                      >
+                        <div className="flex-shrink-0 w-2 h-2 bg-light-accent dark:bg-dark-accent rounded-full mt-2"></div>
                         <div className="flex-1">
                           <div className="flex justify-between items-start">
                             <div>
-                              <p className="text-sm font-medium text-gray-900 capitalize">
+                              <p className="text-sm font-medium text-light-text dark:text-dark-text capitalize">
                                 {event.eventType.replace('_', ' ')}
                               </p>
-                              <p className="text-sm text-gray-600">{event.page}</p>
+                              <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary">{event.page}</p>
                               {event.element && (
-                                <p className="text-xs text-gray-500">Element: {event.element}</p>
+                                <p className="text-xs text-light-text-muted dark:text-dark-text-muted">Element: {event.element}</p>
                               )}
                             </div>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-light-text-muted dark:text-dark-text-muted">
                               {formatTimestamp(event.timestamp)}
                             </span>
                           </div>
                         </div>
-                      </div>
+                      </motion.div>
                     ))}
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
         </div>
       </div>

@@ -173,10 +173,10 @@ export default function HeatmapPage() {
                   : 'Please check your subscription status'
                 }
               </p>
-            </div>
-          </div>
-        </div>
+                      </div>
+        </motion.div>
       </div>
+    </div>
     );
   }
 
@@ -365,16 +365,21 @@ export default function HeatmapPage() {
 
         {/* Debug Info (temporary) */}
         {(analytics as any).debug && (
-          <div className="bg-gray-100 rounded-lg p-4 mb-8">
-            <h3 className="font-semibold text-gray-700 mb-2">Debug Information</h3>
-            <div className="text-sm text-gray-600 space-y-1">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="card p-4 mb-8"
+          >
+            <h3 className="font-semibold text-light-text dark:text-dark-text mb-2">Debug Information</h3>
+            <div className="text-sm text-light-text-secondary dark:text-dark-text-secondary space-y-1">
               <p>Total events in database: {(analytics as any).debug.totalEvents}</p>
               <p>Total sessions in database: {(analytics as any).debug.totalSessions}</p>
               <p>User domains: {(analytics as any).debug.userDomains}</p>
               <p>Raw exit events found: {(analytics as any).debug.rawExitEvents}</p>
               <p>Raw interaction events found: {(analytics as any).debug.rawInteractionEvents}</p>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Exit Heatmap */}
@@ -450,10 +455,15 @@ export default function HeatmapPage() {
                 ))
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Recommendations */}
-        <div className="bg-blue-50 rounded-lg p-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          className="card p-6"
+        >
           <h2 className="text-xl font-semibold text-blue-900 mb-4">🎯 Optimization Recommendations</h2>
           <div className="space-y-3 text-blue-800">
             {analytics.exitHeatmap.length > 0 && (
@@ -488,7 +498,7 @@ export default function HeatmapPage() {
               </>
             )}
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
