@@ -148,26 +148,42 @@ export default function HeatmapPage() {
 
   if (!hasAccess) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto">
-          <div className="bg-white rounded-lg shadow-lg p-8">
+      <div className="min-h-screen bg-gradient-light dark:bg-gradient-dark flex items-center justify-center">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center max-w-md mx-auto"
+        >
+          <div className="card p-8">
             <div className="text-yellow-500 mb-4">
               <svg className="w-16 h-16 mx-auto" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Required</h2>
-            <p className="text-gray-600 mb-6">
+            <motion.div 
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+              className="w-20 h-20 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto mb-6"
+            >
+              <svg className="w-10 h-10 text-yellow-600 dark:text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </motion.div>
+            <h2 className="text-2xl font-bold text-light-text dark:text-dark-text mb-4">Access Required</h2>
+            <p className="text-light-text-secondary dark:text-dark-text-secondary mb-6">
               You need an active subscription to access heatmap analytics.
             </p>
             <div className="space-y-3">
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => router.push('/dashboard')}
-                className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="btn-primary w-full"
               >
                 Go to Dashboard
-              </button>
-              <p className="text-sm text-gray-500">
+              </motion.button>
+              <p className="text-sm text-light-text-muted dark:text-dark-text-muted">
                 {user?.subscriptionStatus === 'trial' 
                   ? 'Upgrade your plan to unlock analytics'
                   : 'Please check your subscription status'
@@ -175,17 +191,21 @@ export default function HeatmapPage() {
               </p>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
   if (!analytics) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600">No analytics data available</p>
-        </div>
+      <div className="min-h-screen bg-gradient-light dark:bg-gradient-dark flex items-center justify-center">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center card p-8"
+        >
+          <p className="text-light-text-secondary dark:text-dark-text-secondary">No analytics data available</p>
+        </motion.div>
       </div>
     );
   }
@@ -409,18 +429,24 @@ export default function HeatmapPage() {
           
           <div className="space-y-4">
             {analytics.exitHeatmap.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No exit data available for the selected filters.</p>
+              <p className="text-light-text-muted dark:text-dark-text-muted text-center py-8">No exit data available for the selected filters.</p>
             ) : (
               analytics.exitHeatmap
                 .sort((a, b) => b.totalExits - a.totalExits)
                 .map((exit, index) => (
-                  <div key={`${exit.domain}${exit.page}`} className="border border-gray-200 rounded-lg p-4">
+                  <motion.div 
+                    key={`${exit.domain}${exit.page}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="card p-4"
+                  >
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex-1">
-                        <h3 className="font-medium text-gray-900">
+                        <h3 className="font-medium text-light-text dark:text-dark-text">
                           {exit.domain}{exit.page}
                         </h3>
-                        <div className="flex items-center space-x-4 mt-1 text-sm text-gray-600">
+                        <div className="flex items-center space-x-4 mt-1 text-sm text-light-text-secondary dark:text-dark-text-secondary">
                           <span>
                             <span className={`font-semibold ${getEngagementColor(exit.avgEngagement)}`}>
                               {exit.avgEngagement.toFixed(1)}
@@ -438,7 +464,7 @@ export default function HeatmapPage() {
                     </div>
                     
                     {/* Exit intensity bar */}
-                    <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div className="w-full bg-light-secondary dark:bg-dark-tertiary rounded-full h-3">
                       <div 
                         className={`h-3 rounded-full ${getExitIntensity(exit.totalExits, maxExits)}`}
                         style={{ width: `${(exit.totalExits / maxExits) * 100}%` }}
@@ -447,11 +473,11 @@ export default function HeatmapPage() {
                     
                     {/* Conversion comparison */}
                     {analytics.conversions[`${exit.domain}${exit.page}`] && (
-                      <div className="mt-2 text-sm text-green-600">
+                      <div className="mt-2 text-sm text-green-600 dark:text-green-400">
                         ✓ {analytics.conversions[`${exit.domain}${exit.page}`]} conversions on this page
                       </div>
                     )}
-                  </div>
+                  </motion.div>
                 ))
             )}
           </div>
@@ -464,12 +490,12 @@ export default function HeatmapPage() {
           transition={{ delay: 0.8 }}
           className="card p-6"
         >
-          <h2 className="text-xl font-semibold text-blue-900 mb-4">🎯 Optimization Recommendations</h2>
-          <div className="space-y-3 text-blue-800">
+          <h2 className="text-xl font-semibold text-light-text dark:text-dark-text mb-4">🎯 Optimization Recommendations</h2>
+          <div className="space-y-3 text-light-text-secondary dark:text-dark-text-secondary">
             {analytics.exitHeatmap.length > 0 && (
               <>
                 <div className="flex items-start">
-                  <div className="flex-shrink-0 w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3"></div>
+                  <div className="flex-shrink-0 w-2 h-2 bg-light-accent dark:bg-dark-accent rounded-full mt-2 mr-3"></div>
                   <p>
                     <strong>High exit page:</strong> {analytics.exitHeatmap[0]?.domain}{analytics.exitHeatmap[0]?.page} 
                     has {analytics.exitHeatmap[0]?.totalExits} exits. Consider improving UX or adding conversion elements.
@@ -478,7 +504,7 @@ export default function HeatmapPage() {
                 
                 {analytics.exitHeatmap.some(e => e.avgEngagement < 5) && (
                   <div className="flex items-start">
-                    <div className="flex-shrink-0 w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3"></div>
+                    <div className="flex-shrink-0 w-2 h-2 bg-light-accent dark:bg-dark-accent rounded-full mt-2 mr-3"></div>
                     <p>
                       <strong>Low engagement detected:</strong> Some pages have very low engagement scores. 
                       Consider improving content quality or page loading speed.
@@ -488,7 +514,7 @@ export default function HeatmapPage() {
                 
                 {analytics.exitHeatmap.some(e => e.avgScrollDepth < 25) && (
                   <div className="flex items-start">
-                    <div className="flex-shrink-0 w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3"></div>
+                    <div className="flex-shrink-0 w-2 h-2 bg-light-accent dark:bg-dark-accent rounded-full mt-2 mr-3"></div>
                     <p>
                       <strong>Poor scroll depth:</strong> Users aren't scrolling much on some pages. 
                       Consider moving important content above the fold.

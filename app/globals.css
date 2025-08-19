@@ -14,7 +14,7 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-light-border dark:border-dark-border;
   }
   
   body {
